@@ -1,0 +1,6 @@
+data
+data-scenery*
+__pycache__
+checkpoints
+logs
+results
