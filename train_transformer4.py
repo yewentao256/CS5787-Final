@@ -10,9 +10,9 @@ from os.path import join
 from models.build4 import build_model
 from loss import IDMRFLoss
 from models.Discriminator_ml import MsImageDis
-
+import torch.nn.functional as F
 from tensorboardX import SummaryWriter
-from dataset import dataset_norm
+from dataset import CORP_REGION_SIZE, dataset_norm, dataset_two_corps
 import argparse
 from datetime import datetime
 from torch.utils.data import DataLoader
@@ -43,11 +43,14 @@ def train(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer):
         iner_img = gt[:, :, 32 : 32 + 128, 32 : 32 + 128]
         # I_groundtruth = torch.cat((I_l, I_r), 3)  # shape: B,C,H,W
 
+
         ## Generate Image
         I_pred, f_de = gen(mask_img)
         # I_pred = gen(mask_img)
         f_en = gen(iner_img, only_encode=True)
 
+        print("gt shape:", gt.shape, "mask_img shape:", mask_img.shape, "iner_img shape:", iner_img.shape, "I_pred shape:", I_pred.shape, "f_de shape:", f_de.shape, "f_en shape:", f_en.shape)
+        exit(1)
         # i_mask = torch.ones_like(gt)
         # i_mask[:, :, 32:32 + 128, 32:32 + 128] = 0
         # mask_pred = I_pred * i_mask
@@ -72,6 +75,113 @@ def train(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer):
         )
         # Feature Reconstruction Loss
         feat_rec_loss = mae(f_de, f_en.detach())
+
+        # Update Generator
+        gen_adv_loss = dis.calc_gen_loss(I_pred, gt)
+        gen_loss = pixel_rec_loss + gen_adv_loss + feat_rec_loss + mrf_loss.cuda(0)
+        opt_gen.zero_grad()
+        gen_loss.backward()
+        opt_gen.step()
+
+        acc_pixel_rec_loss += pixel_rec_loss.data
+        acc_gen_adv_loss += gen_adv_loss.data
+        acc_mrf_loss += mrf_loss.data
+        acc_feat_rec_loss += feat_rec_loss.data
+        acc_dis_adv_loss += dis_adv_loss.data
+
+        if batch_idx % 10 == 0:
+            print("train iter %d" % batch_idx)
+            print("generate_loss:", gen_loss.item())
+            print("dis_loss:", dis_loss.item())
+
+    ## Tensor board
+    writer.add_scalars(
+        "train/generator_loss",
+        {"Pixel Reconstruction Loss": acc_pixel_rec_loss / len(train_loader.dataset)},
+        epoch,
+    )
+    writer.add_scalars(
+        "train/generator_loss",
+        {"Texture Consistency Loss": acc_mrf_loss / len(train_loader.dataset)},
+        epoch,
+    )
+    writer.add_scalars(
+        "train/generator_loss",
+        {"Feature Reconstruction Loss": acc_feat_rec_loss / len(train_loader.dataset)},
+        epoch,
+    )
+    writer.add_scalars(
+        "train/generator_loss",
+        {"Adversarial Loss": acc_gen_adv_loss / len(train_loader.dataset)},
+        epoch,
+    )
+    writer.add_scalars(
+        "train/discriminator_loss",
+        {"Adversarial Loss": acc_dis_adv_loss / len(train_loader.dataset)},
+        epoch,
+    )
+
+# Training
+def train_2(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer):
+    gen.train()
+    dis.train()
+
+    mae = nn.L1Loss().cuda(0)
+    mrf = IDMRFLoss(device=0)
+
+    acc_pixel_rec_loss = 0
+    acc_feat_rec_loss = 0
+    acc_mrf_loss = 0
+    acc_gen_adv_loss = 0
+    acc_dis_adv_loss = 0
+
+    for batch_idx, (gt, mask_img) in enumerate(train_loader):
+        batchSize = mask_img.shape[0]
+        gt, mask_img = gt.cuda(), mask_img.type(torch.FloatTensor).cuda()
+        
+        left_down_img = gt[:, :, 192 - CORP_REGION_SIZE :, 0 : CORP_REGION_SIZE]
+        right_up_img = gt[:, :, 0 : CORP_REGION_SIZE, 192 - CORP_REGION_SIZE :]
+
+
+        ## Generate Image
+        I_pred, f_de = gen(mask_img)
+        f_en_l = gen(left_down_img, only_encode=True)
+        f_en_r = gen(right_up_img, only_encode=True)
+        
+        # TODO: maybe we can find a better way here to match the shape
+        f_de = F.adaptive_avg_pool2d(f_de.permute(0, 3, 1, 2), output_size=(3, 3)).permute(0, 2, 3, 1)
+        
+        # print("gt shape:", gt.shape, "mask_img shape:", mask_img.shape, "left_down_img shape:", left_down_img.shape, "right_up_img shape:", right_up_img.shape, "I_pred shape:", I_pred.shape, "f_de shape:", f_de.shape, "f_en_l shape:", f_en_l.shape, "f_en_r shape:", f_en_r.shape)
+
+        mask_pred_l = I_pred[:, :, 192 - CORP_REGION_SIZE :, 0 : CORP_REGION_SIZE]
+        mask_pred_r = I_pred[:, :, 0 : CORP_REGION_SIZE, 192 - CORP_REGION_SIZE :]
+
+        opt_dis.zero_grad()
+        dis_adv_loss = dis.calc_dis_loss(I_pred.detach(), gt)
+        dis_loss = dis_adv_loss
+        dis_loss.backward()
+        opt_dis.step()
+
+        # Pixel Reconstruction Loss
+        pixel_rec_loss = mae(I_pred, gt) * 20
+
+        # Texture Consistency Loss (IDMRF Loss)
+        mrf_loss_l = (
+            mrf((mask_pred_l.cuda(0) + 1) / 2.0, (left_down_img.cuda(0) + 1) / 2.0)
+            * 0.5
+            / batchSize
+        )
+        mrf_loss_r = (
+            mrf((mask_pred_r.cuda(0) + 1) / 2.0, (right_up_img.cuda(0) + 1) / 2.0)
+            * 0.5
+            / batchSize
+        )
+        mrf_loss = mrf_loss_l + mrf_loss_r
+        # Feature Reconstruction Loss
+        feat_rec_loss_l = mae(f_de, f_en_l.detach())
+        feat_rec_loss_r = mae(f_de, f_en_r.detach())
+        feat_rec_loss = feat_rec_loss_l + feat_rec_loss_r
+        
 
         # Update Generator
         gen_adv_loss = dis.calc_gen_loss(I_pred, gt)
@@ -230,8 +340,11 @@ if __name__ == "__main__":
     transformations = transforms.Compose(
         [Resize(192), CenterCrop(192), ToTensor(), Normalize(mean, std)]
     )
-    train_data = dataset_norm(
-        root=args.train_data_dir, transforms=transformations, imgSize=192, inputsize=128
+    # train_data = dataset_norm(
+    #     root=args.train_data_dir, transforms=transformations, imgSize=192, inputsize=128
+    # )
+    train_data = dataset_two_corps(
+        root=args.train_data_dir, transforms=transformations, imgSize=192, inputsize=CORP_REGION_SIZE
     )
     train_loader = DataLoader(
         train_data,
@@ -245,7 +358,8 @@ if __name__ == "__main__":
     # Train & test the model
     for epoch in range(1, args.epochs + 1):
         print("----Start training[%d]----" % epoch)
-        train(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer)
+        # train(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer)
+        train_2(gen, dis, opt_gen, opt_dis, epoch, train_loader, writer)
 
         # Save the model weight
         torch.save(
