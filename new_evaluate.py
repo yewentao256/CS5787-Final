@@ -72,7 +72,7 @@ def main():
     
     # 初始化生成器并加载预训练权重
     generator = UNetGenerator().to(device)
-    generator.load_state_dict(torch.load('checkpoints/generator_epoch_1.pth', map_location=device))
+    generator.load_state_dict(torch.load('checkpoints/generator_epoch_9.pth', map_location=device))
     generator.eval()
     
     # 测试图像路径

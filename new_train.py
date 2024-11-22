@@ -9,7 +9,6 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
-# 超参数
 num_epochs = 100
 batch_size = 16
 learning_rate = 2e-4
