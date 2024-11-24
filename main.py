@@ -1,5 +1,4 @@
 import os
-import cv2
 import numpy as np
 from glob import glob
 import argparse
@@ -12,7 +11,7 @@ from torchvision import transforms
 from PIL import Image
 
 DEFAULT_NUM_EPOCHS = 20
-DEFAULT_BATCH_SIZE = 16
+DEFAULT_BATCH_SIZE = 64
 DEFAULT_LEARNING_RATE = 2e-4
 DEFAULT_LAMBDA_RECON = 100
 DEFAULT_TARGET_SIZE = 256
@@ -26,45 +25,44 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def preprocess_image(img, target_size=256):
-    h, w, _ = img.shape
-    if h > target_size and w > target_size:
-        # Center crop
-        top = (h - target_size) // 2
-        left = (w - target_size) // 2
-        img = img[top : top + target_size, left : left + target_size]
-    else:
-        # Resize using cv2
-        img = cv2.resize(
-            img, (target_size, target_size), interpolation=cv2.INTER_LINEAR
-        )
-    return img
+def crop_image(img):
+    _, H, W = img.shape
+    left_bottom = img[:, H // 2 :, : W // 2]  # [C, H/2, W/2]
+    right_top = img[:, : H // 2, W // 2 :]  # [C, H/2, W/2]
 
+    # input: left bottom and right top
+    input_img = torch.full_like(img, -1)
+    input_img[:, H // 2 :, : W // 2] = left_bottom
+    input_img[:, : H // 2, W // 2 :] = right_top
 
-def crop_image(img, target_size=256):
-    img = preprocess_image(img, target_size)
-
-    left_bottom = img[target_size // 2 :, : target_size // 2]
-    right_top = img[: target_size // 2, target_size // 2 :]
-
-    # Input image with left bottom and right top
-    input_img = np.zeros_like(img)
-    input_img[target_size // 2 :, : target_size // 2] = left_bottom
-    input_img[: target_size // 2, target_size // 2 :] = right_top
-
-    # Target image with left top and right bottom
-    target_img = img.copy()
-    target_img[target_size // 2 :, : target_size // 2] = 0
-    target_img[: target_size // 2, target_size // 2 :] = 0
-
+    # target: right bottom and left top
+    target_img = img.clone()
+    target_img[:, H // 2 :, : W // 2] = -1
+    target_img[:, : H // 2, W // 2 :] = -1
     return input_img, target_img
 
 
+class ConditionalCenterCropOrResize:
+    def __init__(self, target_size):
+        self.target_size = target_size
+
+    def __call__(self, img):
+        w, h = img.size
+        if h > self.target_size and w > self.target_size:
+            # Center crop
+            img = transforms.functional.center_crop(img, self.target_size) # type: ignore
+        else:
+            # Resize
+            img = transforms.functional.resize( # type: ignore
+                img, (self.target_size, self.target_size), interpolation=Image.BILINEAR
+            )
+        return img
+
+
 class SceneryDataset(Dataset):
-    def __init__(self, image_paths, transform=None, target_size=256):
+    def __init__(self, image_paths, transform=None):
         self.image_paths = image_paths
         self.transform = transform
-        self.target_size = target_size
 
     def __len__(self):
         return len(self.image_paths)
@@ -73,17 +71,13 @@ class SceneryDataset(Dataset):
         img_path = self.image_paths[idx]
         try:
             img = Image.open(img_path).convert("RGB")
-            img = np.array(img)
         except Exception as e:
-            print(
-                f"Warning: Unable to read image at path: {img_path}. Error: {e}. Returning a blank image."
-            )
-            img = np.zeros((self.target_size, self.target_size, 3), dtype=np.uint8)
+            raise Exception(f"Unable to open image {img_path}. Error: {e}")
 
-        input_img, target_img = crop_image(img, self.target_size)
         if self.transform:
-            input_img = self.transform(input_img)
-            target_img = self.transform(target_img)
+            img = self.transform(img)
+
+        input_img, target_img = crop_image(img)
         return input_img, target_img
 
 
@@ -205,12 +199,8 @@ def train(args):
     generator = UNetGenerator().to(device)
     discriminator = PatchDiscriminator().to(device)
 
-    g_optimizer = Adam(
-        generator.parameters(), lr=learning_rate, betas=(0.5, 0.999)
-    )
-    d_optimizer = Adam(
-        discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999)
-    )
+    g_optimizer = Adam(generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
+    d_optimizer = Adam(discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
 
     criterion_GAN = nn.BCEWithLogitsLoss()
     criterion_recon = nn.L1Loss()
@@ -221,12 +211,14 @@ def train(args):
         return
 
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+        [
+            ConditionalCenterCropOrResize(target_size),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5] * 3, [0.5] * 3),
+        ]
     )
 
-    train_dataset = SceneryDataset(
-        train_image_paths, transform=transform, target_size=target_size
-    )
+    train_dataset = SceneryDataset(train_image_paths, transform=transform)
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -250,9 +242,7 @@ def train(args):
             # Train Discriminator
             discriminator.zero_grad()
 
-            real_labels = torch.ones((input_img.size(0), 1, 30, 30)).to(
-                device
-            )  # PatchGAN output size is 30x30
+            real_labels = torch.ones((input_img.size(0), 1, 30, 30)).to(device)
             fake_labels = torch.zeros((input_img.size(0), 1, 30, 30)).to(device)
 
             real_output = discriminator(input_img, real_img)
@@ -329,58 +319,63 @@ def evaluate(args):
         return
 
     transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]
+        [
+            ConditionalCenterCropOrResize(target_size),
+            transforms.ToTensor(),
+            transforms.Normalize([0.5] * 3, [0.5] * 3),
+        ]
     )
 
-    def evaluate_image(img_path, generator, device, transform, target_size=256):
+    def evaluate_image(img_path, generator, device, transform):
         generator.eval()
         try:
             img = Image.open(img_path).convert("RGB")
         except Exception as e:
-            print(
-                f"Warning: Unable to open image {img_path}. Error: {e}. Creating a blank image."
-            )
-            img = Image.new("RGB", (target_size, target_size), (0, 0, 0))
+            raise Exception(f"Unable to open image {img_path}. Error: {e}")
 
-        img = np.array(img)
-        preprocessed_img = preprocess_image(img, target_size)
-        original_img_pil = Image.fromarray(preprocessed_img)
-        input_img, _ = crop_image(preprocessed_img, target_size)
-        input_tensor = transform(input_img).unsqueeze(0).to(device)
+        img_transformed = transform(img)
+        input_img, _ = crop_image(img_transformed)
+        input_tensor = input_img.unsqueeze(0).to(device)
 
         with torch.no_grad():
             gen_img = generator(input_tensor)
 
-        output_tensor = input_tensor + gen_img
+        output_tensor = input_tensor + gen_img + 1
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
-        output_img = output_tensor.squeeze(0).cpu().permute(1, 2, 0).numpy()
-        output_img = ((output_img + 1) / 2 * 255).astype(np.uint8)
+        # Convert tensors to images
+        input_img_np = (input_img.permute(1, 2, 0).numpy() * 0.5 + 0.5) * 255
+        output_img_np = (
+            output_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 0.5 + 0.5
+        ) * 255
 
-        return original_img_pil, Image.fromarray(input_img), output_img
+        input_img_pil = Image.fromarray(input_img_np.astype(np.uint8))
+        output_img_pil = Image.fromarray(output_img_np.astype(np.uint8))
+
+        # Original image (after resizing/cropping)
+        original_img_pil = transforms.functional.to_pil_image( # type: ignore
+            img_transformed * 0.5 + 0.5
+        )
+
+        return original_img_pil, input_img_pil, output_img_pil
 
     print("Starting Evaluation...")
     for img_path in test_image_paths:
-        original_img_pil, input_img_pil, output_img = evaluate_image(
-            img_path, generator, device, transform, target_size
+        original_img_pil, input_img_pil, output_img_pil = evaluate_image(
+            img_path, generator, device, transform
         )
 
         img_name = os.path.splitext(os.path.basename(img_path))[0]
         img_output_dir = os.path.join(results_dir, img_name)
         os.makedirs(img_output_dir, exist_ok=True)
 
-        # Save original image
+        # Save image
         original_output_path = os.path.join(img_output_dir, "original.jpg")
         original_img_pil.save(original_output_path)
-
-        # Save input image
         input_output_path = os.path.join(img_output_dir, "input.jpg")
         input_img_pil.save(input_output_path)
-
-        # Save generated image
-        generated_img_pil = Image.fromarray(output_img)
         generated_output_path = os.path.join(img_output_dir, "generated.jpg")
-        generated_img_pil.save(generated_output_path)
+        output_img_pil.save(generated_output_path)
 
         print(f"Saved original, input, and generated images to {img_output_dir}")
 
@@ -431,7 +426,7 @@ if __name__ == "__main__":
         "--target_size", type=int, default=DEFAULT_TARGET_SIZE, help="Target image size"
     )
     train_parser.add_argument(
-        "--log_interval", type=int, default=100, help="How often to log training status"
+        "--log_interval", type=int, default=10, help="How often to log training status"
     )
 
     # Evaluation sub-command
