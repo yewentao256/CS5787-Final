@@ -6,14 +6,11 @@ import argparse
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
+from torch.optim.adam import Adam
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 
-# ==============================
-# Configuration and Constants
-# ==============================
 DEFAULT_NUM_EPOCHS = 20
 DEFAULT_BATCH_SIZE = 16
 DEFAULT_LEARNING_RATE = 2e-4
@@ -29,13 +26,7 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# ==============================
-# Preprocessing Functions
-# ==============================
 def preprocess_image(img, target_size=256):
-    """
-    Center crop or resize the image to ensure it is of size target_size x target_size.
-    """
     h, w, _ = img.shape
     if h > target_size and w > target_size:
         # Center crop
@@ -51,9 +42,6 @@ def preprocess_image(img, target_size=256):
 
 
 def crop_image(img, target_size=256):
-    """
-    Crop the image into input and target parts.
-    """
     img = preprocess_image(img, target_size)
 
     left_bottom = img[target_size // 2 :, : target_size // 2]
@@ -72,9 +60,6 @@ def crop_image(img, target_size=256):
     return input_img, target_img
 
 
-# ==============================
-# Dataset Definition
-# ==============================
 class SceneryDataset(Dataset):
     def __init__(self, image_paths, transform=None, target_size=256):
         self.image_paths = image_paths
@@ -102,12 +87,6 @@ class SceneryDataset(Dataset):
         return input_img, target_img
 
 
-# ==============================
-# Model Definitions
-# ==============================
-
-
-# UNetGenerator
 class UNetGenerator(nn.Module):
     def __init__(self, in_channels=3, out_channels=3, features=64):
         super(UNetGenerator, self).__init__()
@@ -216,9 +195,6 @@ class PatchDiscriminator(nn.Module):
         return self.model(inp)
 
 
-# ==============================
-# Training Function
-# ==============================
 def train(args):
     num_epochs = args.num_epochs
     batch_size = args.batch_size
@@ -229,10 +205,10 @@ def train(args):
     generator = UNetGenerator().to(device)
     discriminator = PatchDiscriminator().to(device)
 
-    g_optimizer = optim.Adam(
+    g_optimizer = Adam(
         generator.parameters(), lr=learning_rate, betas=(0.5, 0.999)
     )
-    d_optimizer = optim.Adam(
+    d_optimizer = Adam(
         discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999)
     )
 
@@ -271,9 +247,7 @@ def train(args):
             target_img = target_img.to(device)  # [B, 3, 256, 256]
             real_img = input_img + target_img  # real image [B, 3, 256, 256]
 
-            # ======================
             # Train Discriminator
-            # ======================
             discriminator.zero_grad()
 
             real_labels = torch.ones((input_img.size(0), 1, 30, 30)).to(
@@ -293,9 +267,7 @@ def train(args):
             d_loss.backward()
             d_optimizer.step()
 
-            # ======================
             # Train Generator
-            # ======================
             generator.zero_grad()
 
             gen_img = generator(input_img)
@@ -337,9 +309,6 @@ def train(args):
     print("Training Completed.")
 
 
-# ==============================
-# Evaluation Function
-# ==============================
 def evaluate(args):
     checkpoint_path = args.checkpoint_path
     test_dir = args.test_dir
@@ -418,10 +387,7 @@ def evaluate(args):
     print("Evaluation Completed.")
 
 
-# ==============================
-# Main Function with Argument Parsing
-# ==============================
-def main():
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Train or Evaluate the UNet Generator Model."
     )
@@ -500,7 +466,3 @@ def main():
         evaluate(args)
     else:
         parser.print_help()
-
-
-if __name__ == "__main__":
-    main()
