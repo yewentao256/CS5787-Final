@@ -31,15 +31,19 @@ def crop_image(img):
     right_top = img[:, : H // 2, W // 2 :]  # [C, H/2, W/2]
 
     # input: left bottom and right top
-    input_img = torch.full_like(img, -1)
+    input_img = torch.full_like(img, 0)
     input_img[:, H // 2 :, : W // 2] = left_bottom
     input_img[:, : H // 2, W // 2 :] = right_top
 
     # target: right bottom and left top
     target_img = img.clone()
-    target_img[:, H // 2 :, : W // 2] = -1
-    target_img[:, : H // 2, W // 2 :] = -1
-    return input_img, target_img
+    target_img[:, H // 2 :, : W // 2] = 0
+    target_img[:, : H // 2, W // 2 :] = 0
+
+    mask = torch.zeros_like(img)
+    mask[:, H // 2 :, W // 2 :] = 1
+    mask[:, : H // 2, : W // 2] = 1
+    return input_img, target_img, mask
 
 
 class ConditionalCenterCropOrResize:
@@ -50,10 +54,10 @@ class ConditionalCenterCropOrResize:
         w, h = img.size
         if h > self.target_size and w > self.target_size:
             # Center crop
-            img = transforms.functional.center_crop(img, self.target_size) # type: ignore
+            img = transforms.functional.center_crop(img, self.target_size)  # type: ignore
         else:
             # Resize
-            img = transforms.functional.resize( # type: ignore
+            img = transforms.functional.resize(  # type: ignore
                 img, (self.target_size, self.target_size), interpolation=Image.BILINEAR
             )
         return img
@@ -77,8 +81,7 @@ class SceneryDataset(Dataset):
         if self.transform:
             img = self.transform(img)
 
-        input_img, target_img = crop_image(img)
-        return input_img, target_img
+        return crop_image(img)
 
 
 class UNetGenerator(nn.Module):
@@ -234,14 +237,18 @@ def train(args):
         epoch_d_loss = 0.0
         epoch_g_loss = 0.0
 
-        for i, (input_img, target_img) in enumerate(train_loader):
-            input_img = input_img.to(device)  # [B, 3, 256, 256]
-            target_img = target_img.to(device)  # [B, 3, 256, 256]
-            real_img = input_img + target_img  # real image [B, 3, 256, 256]
+        for i, (input_img, target_img, mask) in enumerate(train_loader):
+            input_img, target_img, mask = (
+                input_img.to(device),
+                target_img.to(device),
+                mask.to(device),
+            )
+            real_img = input_img + target_img  # [B, 3, 256, 256]
 
             # Train Discriminator
             discriminator.zero_grad()
 
+            # labels to tell PatchDiscriminator that the images are real or fake
             real_labels = torch.ones((input_img.size(0), 1, 30, 30)).to(device)
             fake_labels = torch.zeros((input_img.size(0), 1, 30, 30)).to(device)
 
@@ -249,7 +256,7 @@ def train(args):
             d_loss_real = criterion_GAN(real_output, real_labels)
 
             gen_img = generator(input_img)
-            fake_img = input_img + gen_img
+            fake_img = input_img + gen_img * mask
             fake_output = discriminator(input_img, fake_img.detach())
             d_loss_fake = criterion_GAN(fake_output, fake_labels)
 
@@ -261,11 +268,11 @@ def train(args):
             generator.zero_grad()
 
             gen_img = generator(input_img)
-            fake_img = input_img + gen_img
+            fake_img = input_img + gen_img * mask
             fake_output = discriminator(input_img, fake_img)
 
             g_adv_loss = criterion_GAN(fake_output, real_labels)
-            g_rec_loss = criterion_recon(gen_img, target_img)
+            g_rec_loss = criterion_recon(gen_img * mask, target_img * mask)
             g_loss = g_adv_loss + lambda_recon * g_rec_loss
             g_loss.backward()
             g_optimizer.step()
@@ -334,13 +341,14 @@ def evaluate(args):
             raise Exception(f"Unable to open image {img_path}. Error: {e}")
 
         img_transformed = transform(img)
-        input_img, _ = crop_image(img_transformed)
+        input_img, _, mask = crop_image(img_transformed)
         input_tensor = input_img.unsqueeze(0).to(device)
+        mask_tensor = mask.unsqueeze(0).to(device)
 
         with torch.no_grad():
             gen_img = generator(input_tensor)
 
-        output_tensor = input_tensor + gen_img + 1
+        output_tensor = input_tensor + gen_img * mask_tensor # +1
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
         # Convert tensors to images
@@ -353,7 +361,7 @@ def evaluate(args):
         output_img_pil = Image.fromarray(output_img_np.astype(np.uint8))
 
         # Original image (after resizing/cropping)
-        original_img_pil = transforms.functional.to_pil_image( # type: ignore
+        original_img_pil = transforms.functional.to_pil_image(  # type: ignore
             img_transformed * 0.5 + 0.5
         )
 
