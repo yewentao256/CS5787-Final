@@ -1,5 +1,4 @@
 import os
-import numpy as np
 from glob import glob
 import argparse
 
@@ -8,6 +7,7 @@ import torch.nn as nn
 from torch.optim.adam import Adam
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
+from torchvision.utils import save_image
 from PIL import Image
 
 BATCH_SIZE = 64
@@ -321,13 +321,14 @@ def evaluate(args):
         print(f"No test images found in {test_dir}. Exiting evaluation.")
         return
 
-    def evaluate_image(img_path, generator, device, transform):
+    print("Starting Evaluation...")
+    for img_path in test_image_paths:
         generator.eval()
         try:
             img = Image.open(img_path).convert("RGB")
         except Exception as e:
-            raise Exception(f"Unable to open image {img_path}. Error: {e}")
-
+            print(f"Unable to open image {img_path}. Error: {e}")
+            continue
         img_transformed = transform(img)
         input_img, _, mask = crop_image(img_transformed)
         input_tensor = input_img.unsqueeze(0).to(device)
@@ -339,40 +340,22 @@ def evaluate(args):
         output_tensor = input_tensor + gen_img * mask_tensor
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
-        # Convert tensors to images
-        input_img_np = (input_img.permute(1, 2, 0).numpy() * 0.5 + 0.5) * 255
-        output_img_np = (
-            output_tensor.squeeze(0).permute(1, 2, 0).cpu().numpy() * 0.5 + 0.5
-        ) * 255
-
-        input_img_pil = Image.fromarray(input_img_np.astype(np.uint8))
-        output_img_pil = Image.fromarray(output_img_np.astype(np.uint8))
-
-        # Original image (after resizing/cropping)
-        original_img_pil = transforms.functional.to_pil_image(  # type: ignore
-            img_transformed * 0.5 + 0.5
-        )
-
-        return original_img_pil, input_img_pil, output_img_pil
-
-    print("Starting Evaluation...")
-    for img_path in test_image_paths:
-        original_img_pil, input_img_pil, output_img_pil = evaluate_image(
-            img_path, generator, device, transform
-        )
+        # Scale tensors from [-1, 1] to [0, 1] for saving
+        original_tensor = img_transformed * 0.5 + 0.5
+        input_tensor_scaled = input_img * 0.5 + 0.5
+        output_tensor_scaled = output_tensor.squeeze(0) * 0.5 + 0.5
 
         img_name = os.path.splitext(os.path.basename(img_path))[0]
         img_output_dir = os.path.join(RESULTS_DIR, img_name)
         os.makedirs(img_output_dir, exist_ok=True)
 
-        # Save image
+        # Define save paths
         original_output_path = os.path.join(img_output_dir, "original.jpg")
-        original_img_pil.save(original_output_path)
         input_output_path = os.path.join(img_output_dir, "input.jpg")
-        input_img_pil.save(input_output_path)
         generated_output_path = os.path.join(img_output_dir, "generated.jpg")
-        output_img_pil.save(generated_output_path)
-
+        save_image(original_tensor.cpu(), original_output_path)
+        save_image(input_tensor_scaled.cpu(), input_output_path)
+        save_image(output_tensor_scaled.cpu(), generated_output_path)
         print(f"Saved original, input, and generated images to {img_output_dir}")
 
     print("Evaluation Completed.")
