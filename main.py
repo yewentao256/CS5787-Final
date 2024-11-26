@@ -10,11 +10,10 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 
-DEFAULT_NUM_EPOCHS = 20
-DEFAULT_BATCH_SIZE = 64
-DEFAULT_LEARNING_RATE = 2e-4
-DEFAULT_LAMBDA_RECON = 100
-DEFAULT_TARGET_SIZE = 256
+BATCH_SIZE = 64
+LEARNING_RATE = 2e-4
+LAMBDA_RECON = 100
+TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
 
@@ -63,6 +62,15 @@ class ConditionalCenterCropOrResize:
         return img
 
 
+transform = transforms.Compose(
+    [
+        ConditionalCenterCropOrResize(TARGET_SIZE),
+        transforms.ToTensor(),
+        transforms.Normalize([0.5] * 3, [0.5] * 3),
+    ]
+)
+
+
 class SceneryDataset(Dataset):
     def __init__(self, image_paths, transform=None):
         self.image_paths = image_paths
@@ -89,23 +97,23 @@ class UNetGenerator(nn.Module):
         super(UNetGenerator, self).__init__()
 
         # Encoder
-        self.encoder1 = self.contract_block(in_channels, features, 4, 2, 1)
-        self.encoder2 = self.contract_block(features, features * 2, 4, 2, 1)
-        self.encoder3 = self.contract_block(features * 2, features * 4, 4, 2, 1)
-        self.encoder4 = self.contract_block(features * 4, features * 8, 4, 2, 1)
-        self.encoder5 = self.contract_block(features * 8, features * 8, 4, 2, 1)
-        self.encoder6 = self.contract_block(features * 8, features * 8, 4, 2, 1)
-        self.encoder7 = self.contract_block(features * 8, features * 8, 4, 2, 1)
-        self.encoder8 = self.contract_block(features * 8, features * 8, 4, 2, 1)
+        self.encoder1 = self.encode_block(in_channels, features, 4, 2, 1)
+        self.encoder2 = self.encode_block(features, features * 2, 4, 2, 1)
+        self.encoder3 = self.encode_block(features * 2, features * 4, 4, 2, 1)
+        self.encoder4 = self.encode_block(features * 4, features * 8, 4, 2, 1)
+        self.encoder5 = self.encode_block(features * 8, features * 8, 4, 2, 1)
+        self.encoder6 = self.encode_block(features * 8, features * 8, 4, 2, 1)
+        self.encoder7 = self.encode_block(features * 8, features * 8, 4, 2, 1)
+        self.encoder8 = self.encode_block(features * 8, features * 8, 4, 2, 1)
 
         # Decoder
-        self.decoder1 = self.expand_block(features * 8, features * 8, 4, 2, 1)
-        self.decoder2 = self.expand_block(features * 16, features * 8, 4, 2, 1)
-        self.decoder3 = self.expand_block(features * 16, features * 8, 4, 2, 1)
-        self.decoder4 = self.expand_block(features * 16, features * 8, 4, 2, 1)
-        self.decoder5 = self.expand_block(features * 16, features * 4, 4, 2, 1)
-        self.decoder6 = self.expand_block(features * 8, features * 2, 4, 2, 1)
-        self.decoder7 = self.expand_block(features * 4, features, 4, 2, 1)
+        self.decoder1 = self.decode_block(features * 8, features * 8, 4, 2, 1)
+        self.decoder2 = self.decode_block(features * 16, features * 8, 4, 2, 1)
+        self.decoder3 = self.decode_block(features * 16, features * 8, 4, 2, 1)
+        self.decoder4 = self.decode_block(features * 16, features * 8, 4, 2, 1)
+        self.decoder5 = self.decode_block(features * 16, features * 4, 4, 2, 1)
+        self.decoder6 = self.decode_block(features * 8, features * 2, 4, 2, 1)
+        self.decoder7 = self.decode_block(features * 4, features, 4, 2, 1)
         self.decoder8 = nn.Sequential(
             nn.ConvTranspose2d(
                 features * 2, out_channels, kernel_size=4, stride=2, padding=1
@@ -113,25 +121,23 @@ class UNetGenerator(nn.Module):
             nn.Tanh(),
         )
 
-    def contract_block(self, in_channels, out_channels, kernel_size, stride, padding):
-        block = nn.Sequential(
+    def encode_block(self, in_channels, out_channels, kernel_size, stride, padding):
+        return nn.Sequential(
             nn.Conv2d(
                 in_channels, out_channels, kernel_size, stride, padding, bias=False
             ),
             nn.BatchNorm2d(out_channels),
             nn.LeakyReLU(0.2, inplace=True),
         )
-        return block
 
-    def expand_block(self, in_channels, out_channels, kernel_size, stride, padding):
-        block = nn.Sequential(
+    def decode_block(self, in_channels, out_channels, kernel_size, stride, padding):
+        return nn.Sequential(
             nn.ConvTranspose2d(
                 in_channels, out_channels, kernel_size, stride, padding, bias=False
             ),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
         )
-        return block
 
     def forward(self, x):
         # Encode
@@ -145,6 +151,7 @@ class UNetGenerator(nn.Module):
         enc8 = self.encoder8(enc7)  # 1
 
         # Decode
+        # Skip Connections: concatenate encoder output to decoder input
         dec1 = self.decoder1(enc8)  # 2
         dec1 = torch.cat([dec1, enc7], dim=1)
         dec2 = self.decoder2(dec1)  # 4
@@ -160,7 +167,6 @@ class UNetGenerator(nn.Module):
         dec7 = self.decoder7(dec6)  # 128
         dec7 = torch.cat([dec7, enc1], dim=1)
         dec8 = self.decoder8(dec7)  # 256
-
         return dec8
 
 
@@ -193,17 +199,12 @@ class PatchDiscriminator(nn.Module):
 
 
 def train(args):
-    num_epochs = args.num_epochs
-    batch_size = args.batch_size
-    learning_rate = args.learning_rate
-    lambda_recon = args.lambda_recon
-    target_size = args.target_size
-
+    num_epochs = args.epochs
     generator = UNetGenerator().to(device)
     discriminator = PatchDiscriminator().to(device)
 
-    g_optimizer = Adam(generator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
-    d_optimizer = Adam(discriminator.parameters(), lr=learning_rate, betas=(0.5, 0.999))
+    g_optimizer = Adam(generator.parameters(), lr=LEARNING_RATE, betas=(0.5, 0.999))
+    d_optimizer = Adam(discriminator.parameters(), lr=LEARNING_RATE, betas=(0.5, 0.999))
 
     criterion_GAN = nn.BCEWithLogitsLoss()
     criterion_recon = nn.L1Loss()
@@ -213,24 +214,16 @@ def train(args):
         print(f"No training images found in {args.train_dir}. Exiting training.")
         return
 
-    transform = transforms.Compose(
-        [
-            ConditionalCenterCropOrResize(target_size),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5] * 3, [0.5] * 3),
-        ]
-    )
-
     train_dataset = SceneryDataset(train_image_paths, transform=transform)
     train_loader = DataLoader(
         train_dataset,
-        batch_size=batch_size,
+        batch_size=BATCH_SIZE,
         shuffle=True,
         num_workers=4,
         pin_memory=True,
     )
 
-    print("Starting Training...")
+    print(f"Starting Training... Parameters: {args}")
     for epoch in range(num_epochs):
         generator.train()
         discriminator.train()
@@ -273,7 +266,7 @@ def train(args):
 
             g_adv_loss = criterion_GAN(fake_output, real_labels)
             g_rec_loss = criterion_recon(gen_img * mask, target_img * mask)
-            g_loss = g_adv_loss + lambda_recon * g_rec_loss
+            g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss
             g_loss.backward()
             g_optimizer.step()
 
@@ -309,8 +302,6 @@ def train(args):
 def evaluate(args):
     checkpoint_path = args.checkpoint_path
     test_dir = args.test_dir
-    results_dir = args.results_dir
-    target_size = args.target_size
 
     if not os.path.exists(checkpoint_path):
         print(f"Checkpoint file {checkpoint_path} does not exist. Exiting evaluation.")
@@ -324,14 +315,6 @@ def evaluate(args):
     if not test_image_paths:
         print(f"No test images found in {test_dir}. Exiting evaluation.")
         return
-
-    transform = transforms.Compose(
-        [
-            ConditionalCenterCropOrResize(target_size),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5] * 3, [0.5] * 3),
-        ]
-    )
 
     def evaluate_image(img_path, generator, device, transform):
         generator.eval()
@@ -348,7 +331,7 @@ def evaluate(args):
         with torch.no_grad():
             gen_img = generator(input_tensor)
 
-        output_tensor = input_tensor + gen_img * mask_tensor # +1
+        output_tensor = input_tensor + gen_img * mask_tensor  # +1
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
         # Convert tensors to images
@@ -374,7 +357,7 @@ def evaluate(args):
         )
 
         img_name = os.path.splitext(os.path.basename(img_path))[0]
-        img_output_dir = os.path.join(results_dir, img_name)
+        img_output_dir = os.path.join(RESULTS_DIR, img_name)
         os.makedirs(img_output_dir, exist_ok=True)
 
         # Save image
@@ -391,81 +374,15 @@ def evaluate(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Train or Evaluate the UNet Generator Model."
-    )
-    subparsers = parser.add_subparsers(
-        dest="mode", help="Mode of operation: train or eval", required=True
-    )
-
-    # Training sub-command
-    train_parser = subparsers.add_parser("train", help="Train the model")
-    train_parser.add_argument(
-        "--num_epochs",
-        type=int,
-        default=DEFAULT_NUM_EPOCHS,
-        help="Number of training epochs",
-    )
-    train_parser.add_argument(
-        "--batch_size",
-        type=int,
-        default=DEFAULT_BATCH_SIZE,
-        help="Batch size for training",
-    )
-    train_parser.add_argument(
-        "--learning_rate",
-        type=float,
-        default=DEFAULT_LEARNING_RATE,
-        help="Learning rate for optimizers",
-    )
-    train_parser.add_argument(
-        "--lambda_recon",
-        type=float,
-        default=DEFAULT_LAMBDA_RECON,
-        help="Weight for reconstruction loss",
-    )
-    train_parser.add_argument(
-        "--train_dir",
-        type=str,
-        default="data-scenery",
-        help="Directory containing training images",
-    )
-    train_parser.add_argument(
-        "--target_size", type=int, default=DEFAULT_TARGET_SIZE, help="Target image size"
-    )
-    train_parser.add_argument(
-        "--log_interval", type=int, default=10, help="How often to log training status"
-    )
-
-    # Evaluation sub-command
-    eval_parser = subparsers.add_parser("eval", help="Evaluate the model")
-    eval_parser.add_argument(
-        "--checkpoint_path",
-        type=str,
-        required=True,
-        help="Path to the generator checkpoint file",
-    )
-    eval_parser.add_argument(
-        "--test_dir",
-        type=str,
-        default="data-scenery-small-test",
-        help="Directory containing test images",
-    )
-    eval_parser.add_argument(
-        "--results_dir",
-        type=str,
-        default=RESULTS_DIR,
-        help="Directory to save evaluation results",
-    )
-    eval_parser.add_argument(
-        "--target_size", type=int, default=DEFAULT_TARGET_SIZE, help="Target image size"
-    )
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=["train", "eval"], default="train")
+    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--train_dir", type=str, default="data-scenery")
+    parser.add_argument("--log_interval", type=int, default=10)
+    parser.add_argument("--checkpoint_path", type=str)
+    parser.add_argument("--test_dir", type=str, default="data-scenery-small-test")
     args = parser.parse_args()
-
     if args.mode == "train":
         train(args)
     elif args.mode == "eval":
         evaluate(args)
-    else:
-        parser.print_help()

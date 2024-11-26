@@ -5,13 +5,13 @@
 ### Train
 
 ```bash
-python main.py train
+python main.py --mode train
 ```
 
 ### Eval
 
 ```bash
-python main.py eval --checkpoint_path checkpoints/generator_epoch_20.pth --test_dir data-scenery-small-test
+python main.py --mode eval --checkpoint_path checkpoints/generator_epoch_20.pth --test_dir data-scenery-small-test
 ```
 
 ### TODO
