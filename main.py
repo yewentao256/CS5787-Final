@@ -16,6 +16,7 @@ LAMBDA_RECON = 100
 TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
+CROP_RATIO = 0.5
 
 
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
@@ -24,24 +25,28 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def crop_image(img):
+def crop_image(img, crop_ratio=CROP_RATIO):
+    assert 0 < crop_ratio < 1
     _, H, W = img.shape
-    left_bottom = img[:, H // 2 :, : W // 2]  # [C, H/2, W/2]
-    right_top = img[:, : H // 2, W // 2 :]  # [C, H/2, W/2]
+    H_crop = int(H * crop_ratio)
+    W_crop = int(W * crop_ratio)
+
+    left_bottom = img[:, H - H_crop:, :W_crop]
+    right_top = img[:, :H_crop, W - W_crop:]
 
     # input: left bottom and right top
-    input_img = torch.full_like(img, 0)
-    input_img[:, H // 2 :, : W // 2] = left_bottom
-    input_img[:, : H // 2, W // 2 :] = right_top
+    input_img = torch.zeros_like(img)
+    input_img[:, H - H_crop:, :W_crop] = left_bottom
+    input_img[:, :H_crop, W - W_crop:] = right_top
 
     # target: right bottom and left top
     target_img = img.clone()
-    target_img[:, H // 2 :, : W // 2] = 0
-    target_img[:, : H // 2, W // 2 :] = 0
+    target_img[:, H - H_crop:, :W_crop] = 0
+    target_img[:, :H_crop, W - W_crop:] = 0
 
-    mask = torch.zeros_like(img)
-    mask[:, H // 2 :, W // 2 :] = 1
-    mask[:, : H // 2, : W // 2] = 1
+    mask = torch.ones_like(img)
+    mask[:, H - H_crop:, :W_crop] = 0
+    mask[:, :H_crop, W - W_crop:] = 0
     return input_img, target_img, mask
 
 
@@ -223,7 +228,7 @@ def train(args):
         pin_memory=True,
     )
 
-    print(f"Starting Training... Parameters: {args}")
+    print(f"Starting Training on {device}... Parameters: {args}")
     for epoch in range(num_epochs):
         generator.train()
         discriminator.train()
@@ -331,7 +336,7 @@ def evaluate(args):
         with torch.no_grad():
             gen_img = generator(input_tensor)
 
-        output_tensor = input_tensor + gen_img * mask_tensor  # +1
+        output_tensor = input_tensor + gen_img * mask_tensor
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
         # Convert tensors to images
@@ -379,7 +384,7 @@ if __name__ == "__main__":
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--train_dir", type=str, default="data-scenery")
     parser.add_argument("--log_interval", type=int, default=10)
-    parser.add_argument("--checkpoint_path", type=str)
+    parser.add_argument("--checkpoint_path", type=str, default="checkpoints")
     parser.add_argument("--test_dir", type=str, default="data-scenery-small-test")
     args = parser.parse_args()
     if args.mode == "train":
