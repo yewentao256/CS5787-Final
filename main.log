@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.6)  25 NOV 2024 22:15
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.6)  25 NOV 2024 22:36
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -609,12 +609,13 @@ Package: balance 1999/02/23 4.3 (PWD)
 File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count316
 \l__pdf_internal_box=\box61
-) (./main.aux)
+)
+No file main.aux.
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/nxlmi/m/it on input line 31.
 LaTeX Font Info:    Trying to load font information for OML+nxlmi on input line 31.
- (/usr/local/texlive/2024/texmf-dist/tex/latex/newtx/omlnxlmi.fd
+(/usr/local/texlive/2024/texmf-dist/tex/latex/newtx/omlnxlmi.fd
 File: omlnxlmi.fd 2013/11/19 Fontinst v1.933 font definitions for OML/nxlmi.
 )
 LaTeX Font Info:    ... okay on input line 31.
@@ -879,7 +880,7 @@ LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/b/n' will be
 
 Underfull \vbox (badness 1960) has occurred while \output is active []
 
-<./images/utransformer.png, id=9, 513.92pt x 262.9825pt>
+<./images/utransformer.png, id=11, 513.92pt x 262.9825pt>
 File: ./images/utransformer.png Graphic file (type png)
 <use ./images/utransformer.png>
 Package pdftex.def Info: ./images/utransformer.png  used on input line 51.
@@ -890,24 +891,20 @@ Class acmart Warning: A possible image without description on input line 53.
 
 LaTeX Font Info:    Font shape `OT1/LinuxLibertineT-TLF/m/n' will be
 (Font)              scaled to size 9.0pt on input line 57.
-(/usr/local/texlive/2024/texmf-dist/tex/generic/stringenc/se-pdfdoc.def
-File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
-) (/usr/local/texlive/2024/texmf-dist/tex/generic/stringenc/se-utf8.def
-File: se-utf8.def 2019/11/29 v1.12 stringenc: UTF-8
-) [1.1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc}
+[1.1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc}
 
 {/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_nh77jq.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_naooyc.enc} <./images/utransformer.png>]
-<./images/output1.jpg, id=31, 256.96pt x 256.96pt>
+<./images/output1.jpg, id=38, 256.96pt x 256.96pt>
 File: ./images/output1.jpg Graphic file (type jpg)
 <use ./images/output1.jpg>
 Package pdftex.def Info: ./images/output1.jpg  used on input line 78.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/input1.jpg, id=32, 256.96pt x 256.96pt>
+<./images/input1.jpg, id=39, 256.96pt x 256.96pt>
 File: ./images/input1.jpg Graphic file (type jpg)
 <use ./images/input1.jpg>
 Package pdftex.def Info: ./images/input1.jpg  used on input line 83.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/original1.jpg, id=33, 256.96pt x 256.96pt>
+<./images/original1.jpg, id=40, 256.96pt x 256.96pt>
 File: ./images/original1.jpg Graphic file (type jpg)
 <use ./images/original1.jpg>
 Package pdftex.def Info: ./images/original1.jpg  used on input line 88.
@@ -916,17 +913,17 @@ Package pdftex.def Info: ./images/original1.jpg  used on input line 88.
 
 Class acmart Warning: A possible image without description on input line 92.
 
-<./images/output2.png, id=34, 256.96pt x 256.96pt>
+<./images/output2.png, id=41, 256.96pt x 256.96pt>
 File: ./images/output2.png Graphic file (type png)
 <use ./images/output2.png>
 Package pdftex.def Info: ./images/output2.png  used on input line 97.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/input2.jpg, id=35, 256.96pt x 256.96pt>
+<./images/input2.jpg, id=42, 256.96pt x 256.96pt>
 File: ./images/input2.jpg Graphic file (type jpg)
 <use ./images/input2.jpg>
 Package pdftex.def Info: ./images/input2.jpg  used on input line 102.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/original2.jpg, id=36, 256.96pt x 256.96pt>
+<./images/original2.jpg, id=43, 256.96pt x 256.96pt>
 File: ./images/original2.jpg Graphic file (type jpg)
 <use ./images/original2.jpg>
 Package pdftex.def Info: ./images/original2.jpg  used on input line 107.
@@ -934,17 +931,17 @@ Package pdftex.def Info: ./images/original2.jpg  used on input line 107.
 
 Class acmart Warning: A possible image without description on input line 111.
 
-<./images/output3.jpg, id=37, 256.96pt x 256.96pt>
+<./images/output3.jpg, id=44, 256.96pt x 256.96pt>
 File: ./images/output3.jpg Graphic file (type jpg)
 <use ./images/output3.jpg>
 Package pdftex.def Info: ./images/output3.jpg  used on input line 116.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/input3.jpg, id=38, 256.96pt x 256.96pt>
+<./images/input3.jpg, id=45, 256.96pt x 256.96pt>
 File: ./images/input3.jpg Graphic file (type jpg)
 <use ./images/input3.jpg>
 Package pdftex.def Info: ./images/input3.jpg  used on input line 121.
 (pdftex.def)             Requested size: 72.34497pt x 72.34431pt.
-<./images/original3.jpg, id=39, 256.96pt x 256.96pt>
+<./images/original3.jpg, id=46, 256.96pt x 256.96pt>
 File: ./images/original3.jpg Graphic file (type jpg)
 <use ./images/original3.jpg>
 Package pdftex.def Info: ./images/original3.jpg  used on input line 126.
@@ -952,7 +949,7 @@ Package pdftex.def Info: ./images/original3.jpg  used on input line 126.
 
 Class acmart Warning: A possible image without description on input line 130.
 
-<./images/diffusion_results.png, id=40, 513.92pt x 307.1475pt>
+<./images/diffusion_results.png, id=49, 513.92pt x 307.1475pt>
 File: ./images/diffusion_results.png Graphic file (type png)
 <use ./images/diffusion_results.png>
 Package pdftex.def Info: ./images/diffusion_results.png  used on input line 144.
@@ -974,12 +971,14 @@ Overfull \vbox (10.0375pt too high) has occurred while \output is active []
 
 Overfull \vbox (12.1615pt too high) has occurred while \output is active []
 
- [3.3]
-
-LaTeX Warning: Hook 'shipout/lastpage' executed on wrong page (1 not 3).
-               Rerun to correct this.
-
-(./main.aux)
+ [3.3] (/usr/local/texlive/2024/texmf-dist/tex/generic/stringenc/se-pdfdoc.def
+File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
+) (/usr/local/texlive/2024/texmf-dist/tex/generic/stringenc/se-utf8.def
+File: se-utf8.def 2019/11/29 v1.12 stringenc: UTF-8
+)
+LaTeX Font Info:    Font shape `T1/LinuxLibertineT-TLF/m/n' will be
+(Font)              scaled to size 7.3pt on input line 177.
+ [4.3] (./main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
@@ -992,6 +991,9 @@ LaTeX Warning: There were undefined references.
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
 
+LaTeX Warning: Temporary extra page added at the end. Rerun to get it removed.
+
+
 Package rerunfilecheck Warning: File `main.out' has changed.
 (rerunfilecheck)                Rerun to get outlines right
 (rerunfilecheck)                or use package `bookmark'.
@@ -1001,18 +1003,18 @@ Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 21061 strings out of 474116
- 340245 string characters out of 5743683
+ 21072 strings out of 474116
+ 340584 string characters out of 5743683
  1956187 words of memory out of 5000000
- 42601 multiletter control sequences out of 15000+600000
- 704287 words of font info for 287 fonts, out of 8000000 for 9000
+ 42604 multiletter control sequences out of 15000+600000
+ 710096 words of font info for 293 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 90i,12n,131p,1703b,707s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,12n,131p,1752b,699s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinBiolinumT.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinBiolinumTB.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/newtx/txsys.pfb>
-Output written on main.pdf (3 pages, 1170060 bytes).
+Output written on main.pdf (4 pages, 1171701 bytes).
 PDF statistics:
- 96 PDF objects out of 1000 (max. 8388607)
- 62 compressed objects within 1 object stream
+ 109 PDF objects out of 1000 (max. 8388607)
+ 74 compressed objects within 1 object stream
  19 named destinations out of 1000 (max. 500000)
- 79944 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 84040 words of extra memory for PDF output out of 89155 (max. 10000000)
 
