@@ -9,6 +9,13 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torchvision.utils import save_image
 from PIL import Image
+from torchmetrics.image.fid import FrechetInceptionDistance
+from torchmetrics.image.inception import InceptionScore
+from torchmetrics.functional import (
+    peak_signal_noise_ratio,
+    structural_similarity_index_measure,
+)
+
 
 BATCH_SIZE = 64
 LEARNING_RATE = 2e-4
@@ -31,22 +38,22 @@ def crop_image(img, crop_ratio=CROP_RATIO):
     H_crop = int(H * crop_ratio)
     W_crop = int(W * crop_ratio)
 
-    left_bottom = img[:, H - H_crop:, :W_crop]
-    right_top = img[:, :H_crop, W - W_crop:]
+    left_bottom = img[:, H - H_crop :, :W_crop]
+    right_top = img[:, :H_crop, W - W_crop :]
 
     # input: left bottom and right top
     input_img = torch.zeros_like(img)
-    input_img[:, H - H_crop:, :W_crop] = left_bottom
-    input_img[:, :H_crop, W - W_crop:] = right_top
+    input_img[:, H - H_crop :, :W_crop] = left_bottom
+    input_img[:, :H_crop, W - W_crop :] = right_top
 
     # target: right bottom and left top
     target_img = img.clone()
-    target_img[:, H - H_crop:, :W_crop] = 0
-    target_img[:, :H_crop, W - W_crop:] = 0
+    target_img[:, H - H_crop :, :W_crop] = 0
+    target_img[:, :H_crop, W - W_crop :] = 0
 
     mask = torch.ones_like(img)
-    mask[:, H - H_crop:, :W_crop] = 0
-    mask[:, :H_crop, W - W_crop:] = 0
+    mask[:, H - H_crop :, :W_crop] = 0
+    mask[:, :H_crop, W - W_crop :] = 0
     return input_img, target_img, mask
 
 
@@ -321,6 +328,12 @@ def evaluate(args):
         print(f"No test images found in {test_dir}. Exiting evaluation.")
         return
 
+    # Initialize metrics
+    fid_metric = FrechetInceptionDistance(feature=2048).to(device)
+    is_metric = InceptionScore().to(device)
+    psnr_values = []
+    ssim_values = []
+
     print("Starting Evaluation...")
     for img_path in test_image_paths:
         generator.eval()
@@ -333,6 +346,7 @@ def evaluate(args):
         input_img, _, mask = crop_image(img_transformed)
         input_tensor = input_img.unsqueeze(0).to(device)
         mask_tensor = mask.unsqueeze(0).to(device)
+        original_tensor = img_transformed.unsqueeze(0).to(device)  # Original image
 
         with torch.no_grad():
             gen_img = generator(input_tensor)
@@ -340,10 +354,32 @@ def evaluate(args):
         output_tensor = input_tensor + gen_img * mask_tensor
         output_tensor = torch.clamp(output_tensor, -1, 1)  # Avoid out of range
 
-        # Scale tensors from [-1, 1] to [0, 1] for saving
-        original_tensor = img_transformed * 0.5 + 0.5
-        input_tensor_scaled = input_img * 0.5 + 0.5
-        output_tensor_scaled = output_tensor.squeeze(0) * 0.5 + 0.5
+        # Convert images to [0, 1] range for metrics
+        output_tensor_scaled = output_tensor * 0.5 + 0.5
+        input_tensor_scaled = input_tensor * 0.5 + 0.5
+        original_tensor_scaled = original_tensor * 0.5 + 0.5
+
+        # Compute PSNR and SSIM using torchmetrics
+        psnr_value = peak_signal_noise_ratio(
+            output_tensor_scaled, original_tensor_scaled, data_range=1.0
+        ).item()
+        ssim_value = structural_similarity_index_measure(
+            output_tensor_scaled, original_tensor_scaled, data_range=1.0
+        ).item()  # type: ignore
+
+        psnr_values.append(psnr_value)
+        ssim_values.append(ssim_value)
+
+        # Convert images to [0, 255] range and uint8 for FID
+        output_uint8 = (output_tensor_scaled * 255).to(torch.uint8)
+        target_uint8 = (original_tensor_scaled * 255).to(torch.uint8)
+
+        # Update FID metric
+        fid_metric.update(output_uint8, real=False)
+        fid_metric.update(target_uint8, real=True)
+
+        # Update IS metric (only on generated images)
+        is_metric.update(output_uint8)
 
         img_name = os.path.splitext(os.path.basename(img_path))[0]
         img_output_dir = os.path.join(RESULTS_DIR, img_name)
@@ -353,12 +389,23 @@ def evaluate(args):
         original_output_path = os.path.join(img_output_dir, "original.jpg")
         input_output_path = os.path.join(img_output_dir, "input.jpg")
         generated_output_path = os.path.join(img_output_dir, "generated.jpg")
-        save_image(original_tensor.cpu(), original_output_path)
+        save_image(original_tensor_scaled.cpu(), original_output_path)
         save_image(input_tensor_scaled.cpu(), input_output_path)
         save_image(output_tensor_scaled.cpu(), generated_output_path)
         print(f"Saved original, input, and generated images to {img_output_dir}")
 
-    print("Evaluation Completed.")
+    # Compute average PSNR and SSIM
+    avg_psnr = sum(psnr_values) / len(psnr_values)
+    avg_ssim = sum(ssim_values) / len(ssim_values)
+
+    # Compute FID and IS
+    fid_score = fid_metric.compute().item()
+    is_score_mean, is_score_std = is_metric.compute()
+
+    print(f"Average PSNR: {avg_psnr:.4f}")
+    print(f"Average SSIM: {avg_ssim:.4f}")
+    print(f"FID Score: {fid_score:.4f}")
+    print(f"Inception Score: {is_score_mean:.4f} +/- {is_score_std:.4f}")
 
 
 if __name__ == "__main__":
