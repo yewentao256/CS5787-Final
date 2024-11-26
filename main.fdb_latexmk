@@ -1,6 +1,6 @@
 # Fdb version 4
-["pdflatex"] 1732592195.21209 "/Users/sebastianjay/Cornell Tech/CS 5787 Deep Learning/CS5787-Final/main.tex" "main.pdf" "main" 1732592196.30599 2
-  "/Users/sebastianjay/Cornell Tech/CS 5787 Deep Learning/CS5787-Final/main.tex" 1732592193.70402 9539 4e94b2e30760d9d7ac00485c8e8b248b ""
+["pdflatex"] 1732593617.49736 "/Users/sebastianjay/Cornell Tech/CS 5787 Deep Learning/CS5787-Final/main.tex" "main.pdf" "main" 1732593618.5937 2
+  "/Users/sebastianjay/Cornell Tech/CS 5787 Deep Learning/CS5787-Final/main.tex" 1732593616.04667 9602 af13318f61f9c00262645397e9115bda ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_25tcsq.enc" 1490131464 2921 8ca0eb0831f9bc5da080d3697cfe67bf ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_76gpa5.enc" 1490131464 2933 9ad527ce78d7c5fa0a642dead095f172 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/libertine/lbtn_7grukw.enc" 1490131464 2934 a4a9158faed2e9e89c771b4e3b7fc12f ""
@@ -186,9 +186,9 @@
   "images/output2.png" 1732589502.31146 110543 32e96fd0229e05b31632e439de247762 ""
   "images/output3.jpg" 1732589548.47339 7861 232b7dc3c72bdeee933e08f164a8ea49 ""
   "images/utransformer.png" 1732589395.74047 200909 042b51c140ee95492e503d069dff57cf ""
-  "main.aux" 1732592196.16447 1243 205f4f8c6e79570b6f259c3a4d639dc6 "pdflatex"
-  "main.out" 1732592195.81204 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.tex" 1732592193.70402 9539 4e94b2e30760d9d7ac00485c8e8b248b ""
+  "main.aux" 1732593618.45805 1243 205f4f8c6e79570b6f259c3a4d639dc6 "pdflatex"
+  "main.out" 1732593618.09032 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.tex" 1732593616.04667 9602 af13318f61f9c00262645397e9115bda ""
   (generated)
   "main.aux"
   "main.log"

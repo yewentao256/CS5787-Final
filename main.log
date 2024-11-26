@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.6)  25 NOV 2024 22:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.9.6)  25 NOV 2024 23:00
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1003,15 +1003,15 @@ Package rerunfilecheck Info: Checksums for `main.out':
 (rerunfilecheck)             After:  D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 21072 strings out of 474116
- 340584 string characters out of 5743683
+ 21075 strings out of 474116
+ 340656 string characters out of 5743683
  1956187 words of memory out of 5000000
  42604 multiletter control sequences out of 15000+600000
- 710096 words of font info for 293 fonts, out of 8000000 for 9000
+ 710369 words of font info for 295 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
- 90i,12n,131p,1752b,699s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,12n,131p,1745b,699s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinBiolinumT.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinBiolinumTB.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/newtx/txsys.pfb>
-Output written on main.pdf (4 pages, 1171701 bytes).
+Output written on main.pdf (4 pages, 1171523 bytes).
 PDF statistics:
  109 PDF objects out of 1000 (max. 8388607)
  74 compressed objects within 1 object stream

@@ -36,10 +36,10 @@
 Wentao Ye (wy335), Mitchell Krieger (mak483), Sebastian Jay (srj63)
 
 \section*{Proposal}
-Traditionally, image interpolation or inpainting tries to fill in a removed section of an image. There are a variety of methodologies for image interpolation, but our hope is to attempt a new approach where we can interpolate a scene between two disparate images by using image outpainting or image extrapolation. Outpainting or image extrapolation is the process of taking an image and generating an extension of the image beyond the original border. In general, outpainting is a difficult task because it requires the model to expand beyond a known region to generate scenes that look real. Our idea is to take two images and see if we can train a GAN-like architecture to outpaint these two images towards one another to complete a scene. We will be basing this project on the work done in \href{https://arxiv.org/abs/2201.11403}{Generalised Image Outpainting with U-Transformer by Gao et. al (2022) [LINK]}, which leveraged a transformer-based GAN they call a U-transformer. In the past, image outpainting only focused in the horizontal direction. However, in this paper, Gao et al, were able to outpaint horizontally and vertically. We hope to use this architecture to train a new GAN-based approach that can interpolate diagonally adjacent image gaps. This is different from interpolation in the past which was able to use the context of the surrounding image to fill in a removed section. Instead, our focus is on seeing if the model can understand how to connect different scenes in a realistic way. If successful, it means that the model understands relationships between disparate images and can model the visual world in a more precise way.
+Traditionally, image interpolation or inpainting tries to fill in a removed section of an image. There are a variety of methodologies for image interpolation, but our hope is to attempt a new approach where we can interpolate a scene between two disparate images by using image outpainting or image extrapolation. Outpainting or image extrapolation is the process of taking an image and generating an extension of the image beyond the original border. In general, outpainting is a difficult task because it requires the model to expand beyond a known region to generate scenes that look real. Our idea is to take two images and see if we can train a GAN-like architecture to outpaint these two images towards one another to complete a scene. We will be basing this project on the work done in \href{https://arxiv.org/abs/2201.11403}{Generalised Image Outpainting with U-Transformer by Gao et. al (2022)}, which leveraged a transformer-based GAN they call a U-transformer. In the past, image outpainting only focused in the horizontal direction. However, in this paper, Gao et al, were able to outpaint horizontally and vertically. We hope to use this architecture to train a new GAN-based approach that can interpolate diagonally adjacent image gaps. This is different from interpolation in the past which was able to use the context of the surrounding image to fill in a removed section. Instead, our focus is on seeing if the model can understand how to connect different scenes in a realistic way. If successful, it means that the model understands relationships between disparate images and can model the visual world in a more precise way.
 
 \section*{Datasets}
-We used the \href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting [LINK]} dataset to train our models. It is used in the original U-Transformer paper. We also tested our trained model on additional images sourced from the internet.
+We used the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset to train our models. It is used in the original U-Transformer paper. We also tested our trained model on additional images sourced from the internet.
 
 \section*{Progress}
 
@@ -63,13 +63,13 @@ The U-transformer has the following shortcomings:
 \subsection*{2. New GAN Solution}
 The U-Transformer is based on Swin-transformer, which is quite slow, so we want to make it faster and cheaper.
 
-Specifically, we use a GAN framework featuring a \href{https://paperswithcode.com/method/u-net-gan}{U-Net GAN generator [LINK]} and a \href{https://paperswithcode.com/method/patchgan}{PatchGAN discriminator [LINK]} for image outpainting and scene interpolation. The generator’s encoder-decoder with skip connections creates missing regions, while the discriminator evaluates patch realism. Training optimizes adversarial and reconstruction losses using the Adam optimizer, enabling seamless scene integration. Its benefits are as follows:
+Specifically, we use a GAN framework featuring a \textcolor{red}{\href{https://paperswithcode.com/method/u-net-gan}{U-Net GAN generator}} and a \textcolor{red}{\href{https://paperswithcode.com/method/patchgan}{PatchGAN discriminator}} for image outpainting and scene interpolation. The generator’s encoder-decoder with skip connections creates missing regions, while the discriminator evaluates patch realism. Training optimizes adversarial and reconstruction losses using the Adam optimizer, enabling seamless scene integration. Its benefits are as follows:
 \begin{itemize}
     \item Fast, low memory usage, can run on a single RTX 2070
     \item It achieved the results shown below after 20 epochs, training for 3 hours
     \item 256 $\times$ 256 size
-    \item \href{https://drive.google.com/file/d/1EORJGbg-rMQ_FNpzz7OSG73Vluro0Lxl/view?usp=sharing}{Weights [LINK]}
-    \item \href{https://drive.google.com/drive/u/2/folders/1wOD_tgj9k3gUZI9hBL-WtKDS-uvz9m5S}{Code (Google Drive) [LINK]}
+    \item \textcolor{red}{\href{https://drive.google.com/file/d/1EORJGbg-rMQ_FNpzz7OSG73Vluro0Lxl/view?usp=sharing}{Weights}}
+    \item \textcolor{red}{\href{https://drive.google.com/drive/u/2/folders/1wOD_tgj9k3gUZI9hBL-WtKDS-uvz9m5S}{Code (Google Drive)}}
 \end{itemize}
 
 \begin{figure}[h]
@@ -135,8 +135,8 @@ In addition, we looked into additional papers that use diffusion models for task
 \begin{itemize}
     \item Trained on NVIDIA A100 in Google Colab, training took ~2.66 hours for 14 epochs
     \item 320 $\times$ 512 Image size
-    \item \href{https://drive.google.com/file/d/1-wr7a01nVmRRFrYpwbjaQlc0FIDKINvY/view?usp=sharing}{Weights [LINK]}
-    \item \href{https://colab.research.google.com/drive/1XZfe98Ox-r8rhJx-8WGiJiJjFm-hb6yO?authuser=2}{Code (Google Drive) [LINK]}
+    \item \textcolor{red}{\href{https://drive.google.com/file/d/1-wr7a01nVmRRFrYpwbjaQlc0FIDKINvY/view?usp=sharing}{Weights}}
+    \item \textcolor{red}{\href{https://colab.research.google.com/drive/1XZfe98Ox-r8rhJx-8WGiJiJjFm-hb6yO?authuser=2}{Code (Google Drive)}}
 \end{itemize}
 
 \begin{figure}[h]
