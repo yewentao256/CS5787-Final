@@ -130,7 +130,7 @@ Specifically, we use a GAN framework featuring a \textcolor{red}{\href{https://p
 \end{figure}
 
 \subsection*{3. New Diffusion Model}
-In addition, we looked into additional papers that use diffusion models for tasks like this instead of GANs such as “RePaint: Inpainting using Denoising Diffusion Probabilistic Models” by Lugmayr et al (2022). Using this research we built an initial diffusion model that inpaints the NS-outpainiting dataset using diffusion. This model was trained on pairs of images and varying masks to represent unknown regions. In the training process, noise is gradually added to only the area where the masks are and MSE is used to attempt to predict this noise over 1000 timesteps. Then the diffusion model attempts to denoise only the pixels that are in the mask. After training for 14 epochs, the diffusion approach shows promising results.  
+In addition, we looked into additional papers that use diffusion models for tasks like this instead of GANs such as \textcolor{red}{\href{https://arxiv.org/pdf/2201.09865}{“RePaint: Inpainting using Denoising Diffusion Probabilistic Models”}} by Lugmayr et al (2022). Using this research we built an initial diffusion model that inpaints the NS-outpainiting dataset using diffusion. This model was trained on pairs of images and varying masks to represent unknown regions. In the training process, noise is gradually added to only the area where the masks are and MSE is used to attempt to predict this noise over 1000 timesteps. Then the diffusion model attempts to denoise only the pixels that are in the mask. After training for 14 epochs, the diffusion approach shows promising results.  
 
 \begin{itemize}
     \item Trained on NVIDIA A100 in Google Colab, training took ~2.66 hours for 14 epochs
