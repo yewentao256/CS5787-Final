@@ -20,7 +20,8 @@ python main.py --mode eval --checkpoint_path checkpoints/generator_epoch_20.pth 
 - [x] Using mask to make sure the original image is not updated.
 - [x] Adaptable crop size
 - [x] Adding metrics
-- [ ] Update loss to optimize metrics
+- [ ] Update loss to optimize metrics(doing)
+- [ ] Update Model Structure to optimize loss.
 - [ ] Bigger image size
 - [ ] Using two different images
 - [ ] Generate only the missing part, instead of using mask (hard based on GAN)

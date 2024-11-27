@@ -17,9 +17,10 @@ from torchmetrics.functional import (
 )
 
 
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 LEARNING_RATE = 2e-4
 LAMBDA_RECON = 100
+LAMBDA_SSIM = 1
 TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
@@ -253,7 +254,6 @@ def train(args):
             # Train Discriminator
             discriminator.zero_grad()
 
-            # labels to tell PatchDiscriminator that the images are real or fake
             real_labels = torch.ones((input_img.size(0), 1, 30, 30)).to(device)
             fake_labels = torch.zeros((input_img.size(0), 1, 30, 30)).to(device)
 
@@ -278,7 +278,14 @@ def train(args):
 
             g_adv_loss = criterion_GAN(fake_output, real_labels)
             g_rec_loss = criterion_recon(gen_img * mask, target_img * mask)
-            g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss
+
+            # Compute SSIM loss
+            g_ssim_loss = 1 - structural_similarity_index_measure(
+                gen_img * mask, target_img * mask, data_range=2.0
+            ) # type: ignore
+
+            # Update generator loss to include SSIM loss
+            g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss + LAMBDA_SSIM * g_ssim_loss
             g_loss.backward()
             g_optimizer.step()
 
