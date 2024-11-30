@@ -14,6 +14,17 @@ python main.py --mode train
 python main.py --mode eval --checkpoint_path checkpoints/generator_epoch_20.pth --test_dir data-scenery-small-test
 ```
 
+### Eval with Two Images
+
+Note: You can directly input any image, our code will help you to crop
+
+```bash
+python main.py --mode eval --checkpoint_path checkpoints/generator_epoch_20.pth --image1 data-scenery-small-test/istock-612x612.jpg --image2 data-scenery-small-test/pexels-pripicart.jpg
+python main.py --mode eval_2 --checkpoint_path checkpoints/generator_epoch_20.pth --image1 data-scenery-small-test/lake-1280.jpg --image2 data-scenery-small-test/pexels-pripicart.jpg
+python main.py --mode eval_2 --checkpoint_path checkpoints/generator_epoch_20.pth --image1 data-scenery-small-test/lake-1280.jpg --image2 data-scenery-small-test/istock-612x612.jpg
+python main.py --mode eval_2 --checkpoint_path checkpoints/generator_epoch_20.pth --image1 data-scenery-small-test/lake-1280.jpg --image2 data-scenery-small-test/pexels-akos-szabo.jpg
+```
+
 ### TODO
 
 - [x] Fix Dark image

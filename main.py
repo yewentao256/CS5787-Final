@@ -16,7 +16,6 @@ from torchmetrics.functional import (
     structural_similarity_index_measure,
 )
 
-
 BATCH_SIZE = 32
 LEARNING_RATE = 2e-4
 LAMBDA_RECON = 100
@@ -25,7 +24,6 @@ TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
 CROP_RATIO = 0.5
-
 
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -49,13 +47,26 @@ def crop_image(img, crop_ratio=CROP_RATIO):
 
     # target: right bottom and left top
     target_img = img.clone()
-    target_img[:, H - H_crop :, :W_crop] = 0
+    target_img[:, H - H_crop :, : W_crop] = 0
     target_img[:, :H_crop, W - W_crop :] = 0
 
     mask = torch.ones_like(img)
     mask[:, H - H_crop :, :W_crop] = 0
     mask[:, :H_crop, W - W_crop :] = 0
     return input_img, target_img, mask
+
+
+def combine_two_images_into_input(img1, img2, target_size=TARGET_SIZE, crop_ratio=CROP_RATIO):
+    H_crop, W_crop = int(target_size * crop_ratio), int(target_size * crop_ratio)
+    
+    img1_resized, _, mask = crop_image(img1)
+    img2_resized, _, _ = crop_image(img2)
+
+    input_img = torch.zeros(3, target_size, target_size)
+    input_img[:, target_size - H_crop :, :W_crop] = img1_resized[:, target_size - H_crop :, :W_crop]
+    input_img[:, :H_crop, target_size - W_crop :] = img2_resized[:, :H_crop, target_size - W_crop :]
+
+    return input_img, mask
 
 
 class ConditionalCenterCropOrResize:
@@ -282,7 +293,7 @@ def train(args):
             # Compute SSIM loss
             g_ssim_loss = 1 - structural_similarity_index_measure(
                 gen_img * mask, target_img * mask, data_range=2.0
-            ) # type: ignore
+            )  # type: ignore
 
             # Update generator loss to include SSIM loss
             g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss + LAMBDA_SSIM * g_ssim_loss
@@ -327,7 +338,7 @@ def evaluate(args):
         return
 
     generator = UNetGenerator().to(device)
-    generator.load_state_dict(torch.load(checkpoint_path, map_location=device))
+    generator.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
     generator.eval()
 
     test_image_paths = glob(os.path.join(test_dir, "*"))
@@ -402,8 +413,8 @@ def evaluate(args):
         print(f"Saved original, input, and generated images to {img_output_dir}")
 
     # Compute average PSNR and SSIM
-    avg_psnr = sum(psnr_values) / len(psnr_values)
-    avg_ssim = sum(ssim_values) / len(ssim_values)
+    avg_psnr = sum(psnr_values) / len(psnr_values) if psnr_values else 0
+    avg_ssim = sum(ssim_values) / len(ssim_values) if ssim_values else 0
 
     # Compute FID and IS
     fid_score = fid_metric.compute().item()
@@ -413,6 +424,76 @@ def evaluate(args):
     print(f"Average SSIM: {avg_ssim:.4f}")
     print(f"FID Score: {fid_score:.4f}")
     print(f"Inception Score: {is_score_mean:.4f} +/- {is_score_std:.4f}")
+
+
+def evaluate_two_images(args):
+    checkpoint_path = args.checkpoint_path
+    image1_path = args.image1
+    image2_path = args.image2
+
+    if not os.path.exists(checkpoint_path):
+        print(f"Checkpoint file {checkpoint_path} does not exist. Exiting evaluation.")
+        return
+
+    if not os.path.exists(image1_path):
+        print(f"Image file {image1_path} does not exist. Exiting evaluation.")
+        return
+
+    if not os.path.exists(image2_path):
+        print(f"Image file {image2_path} does not exist. Exiting evaluation.")
+        return
+
+    generator = UNetGenerator().to(device)
+    generator.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+    generator.eval()
+
+    # Load and transform both images
+    try:
+        img1 = Image.open(image1_path).convert("RGB")
+    except Exception as e:
+        print(f"Unable to open image {image1_path}. Error: {e}")
+        return
+
+    try:
+        img2 = Image.open(image2_path).convert("RGB")
+    except Exception as e:
+        print(f"Unable to open image {image2_path}. Error: {e}")
+        return
+
+    img1_transformed = transform(img1)
+    img2_transformed = transform(img2)
+
+    # Combine images with left-bottom and right-top placement
+    input_img, mask = combine_two_images_into_input(img1_transformed, img2_transformed)
+
+    input_tensor = input_img.unsqueeze(0).to(device)
+    mask_tensor = mask.unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        gen_img = generator(input_tensor)
+
+    output_tensor = input_tensor + gen_img * mask_tensor
+    output_tensor = torch.clamp(output_tensor, -1, 1)
+
+    output_tensor_scaled = output_tensor * 0.5 + 0.5
+    input_tensor_scaled = input_tensor * 0.5 + 0.5
+    img1_transformed = img1_transformed * 0.5 + 0.5
+    img2_transformed = img2_transformed * 0.5 + 0.5
+
+    img1_name = os.path.splitext(os.path.basename(image1_path))[0]
+    img2_name = os.path.splitext(os.path.basename(image2_path))[0]
+    combined_output_dir = os.path.join(RESULTS_DIR, f"{img1_name}_{img2_name}_eval_2")
+    os.makedirs(combined_output_dir, exist_ok=True)
+
+    original_1_path = os.path.join(combined_output_dir, "image1.jpg")
+    original_2_path = os.path.join(combined_output_dir, "image2.jpg")
+    input_output_path = os.path.join(combined_output_dir, "input_combined.jpg")
+    generated_output_path = os.path.join(combined_output_dir, "generated_combined.jpg")
+    save_image(img1_transformed.cpu(), original_1_path)
+    save_image(img2_transformed.cpu(), original_2_path)
+    save_image(input_tensor_scaled.cpu(), input_output_path)
+    save_image(output_tensor_scaled.cpu(), generated_output_path)
+    print(f"Processed and saved combined images to {combined_output_dir}")
 
 
 if __name__ == "__main__":
@@ -428,3 +509,5 @@ if __name__ == "__main__":
         train(args)
     elif args.mode == "eval":
         evaluate(args)
+    elif args.mode == "eval_2":
+        evaluate_two_images(args)
