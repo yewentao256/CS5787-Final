@@ -10,7 +10,6 @@ from torchvision import transforms
 from torchvision.utils import save_image
 from PIL import Image
 from torchmetrics.image.fid import FrechetInceptionDistance
-from torchmetrics.image.inception import InceptionScore
 from torchmetrics.functional import (
     peak_signal_noise_ratio,
     structural_similarity_index_measure,
@@ -69,26 +68,10 @@ def combine_two_images_into_input(img1, img2, target_size=TARGET_SIZE, crop_rati
     return input_img, mask
 
 
-class ConditionalCenterCropOrResize:
-    def __init__(self, target_size):
-        self.target_size = target_size
-
-    def __call__(self, img):
-        w, h = img.size
-        if h > self.target_size and w > self.target_size:
-            # Center crop
-            img = transforms.functional.center_crop(img, self.target_size)  # type: ignore
-        else:
-            # Resize
-            img = transforms.functional.resize(  # type: ignore
-                img, (self.target_size, self.target_size), interpolation=Image.BILINEAR
-            )
-        return img
-
-
 transform = transforms.Compose(
     [
-        ConditionalCenterCropOrResize(TARGET_SIZE),
+        transforms.Resize(TARGET_SIZE),
+        transforms.CenterCrop(TARGET_SIZE),
         transforms.ToTensor(),
         transforms.Normalize([0.5] * 3, [0.5] * 3),
     ]
@@ -348,13 +331,11 @@ def evaluate(args):
 
     # Initialize metrics
     fid_metric = FrechetInceptionDistance(feature=2048).to(device)
-    is_metric = InceptionScore().to(device)
     psnr_values = []
     ssim_values = []
 
     print("Starting Evaluation...")
     for img_path in test_image_paths:
-        generator.eval()
         try:
             img = Image.open(img_path).convert("RGB")
         except Exception as e:
@@ -396,9 +377,6 @@ def evaluate(args):
         fid_metric.update(output_uint8, real=False)
         fid_metric.update(target_uint8, real=True)
 
-        # Update IS metric (only on generated images)
-        is_metric.update(output_uint8)
-
         img_name = os.path.splitext(os.path.basename(img_path))[0]
         img_output_dir = os.path.join(RESULTS_DIR, img_name)
         os.makedirs(img_output_dir, exist_ok=True)
@@ -418,12 +396,10 @@ def evaluate(args):
 
     # Compute FID and IS
     fid_score = fid_metric.compute().item()
-    is_score_mean, is_score_std = is_metric.compute()
 
     print(f"Average PSNR: {avg_psnr:.4f}")
     print(f"Average SSIM: {avg_ssim:.4f}")
     print(f"FID Score: {fid_score:.4f}")
-    print(f"Inception Score: {is_score_mean:.4f} +/- {is_score_std:.4f}")
 
 
 def evaluate_two_images(args):
@@ -498,11 +474,11 @@ def evaluate_two_images(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["train", "eval"], default="train")
+    parser.add_argument("--mode", choices=["train", "eval", "eval_2"], default="train")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--train_dir", type=str, default="data-scenery")
     parser.add_argument("--log_interval", type=int, default=10)
-    parser.add_argument("--checkpoint_path", type=str, default="checkpoints")
+    parser.add_argument("--checkpoint_path", type=str, default="checkpoints/generator_epoch_20.pth")
     parser.add_argument("--test_dir", type=str, default="data-scenery-small-test")
     args = parser.parse_args()
     if args.mode == "train":
