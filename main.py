@@ -46,7 +46,7 @@ def crop_image(img, crop_ratio=CROP_RATIO):
 
     # target: right bottom and left top
     target_img = img.clone()
-    target_img[:, H - H_crop :, : W_crop] = 0
+    target_img[:, H - H_crop :, :W_crop] = 0
     target_img[:, :H_crop, W - W_crop :] = 0
 
     mask = torch.ones_like(img)
@@ -55,15 +55,21 @@ def crop_image(img, crop_ratio=CROP_RATIO):
     return input_img, target_img, mask
 
 
-def combine_two_images_into_input(img1, img2, target_size=TARGET_SIZE, crop_ratio=CROP_RATIO):
+def combine_two_images_into_input(
+    img1, img2, target_size=TARGET_SIZE, crop_ratio=CROP_RATIO
+):
     H_crop, W_crop = int(target_size * crop_ratio), int(target_size * crop_ratio)
-    
+
     img1_resized, _, mask = crop_image(img1)
     img2_resized, _, _ = crop_image(img2)
 
     input_img = torch.zeros(3, target_size, target_size)
-    input_img[:, target_size - H_crop :, :W_crop] = img1_resized[:, target_size - H_crop :, :W_crop]
-    input_img[:, :H_crop, target_size - W_crop :] = img2_resized[:, :H_crop, target_size - W_crop :]
+    input_img[:, target_size - H_crop :, :W_crop] = img1_resized[
+        :, target_size - H_crop :, :W_crop
+    ]
+    input_img[:, :H_crop, target_size - W_crop :] = img2_resized[
+        :, :H_crop, target_size - W_crop :
+    ]
 
     return input_img, mask
 
@@ -207,6 +213,7 @@ class PatchDiscriminator(nn.Module):
 
 def train(args):
     num_epochs = args.epochs
+    checkpoint_path = args.checkpoint_path
     generator = UNetGenerator().to(device)
     discriminator = PatchDiscriminator().to(device)
 
@@ -215,6 +222,23 @@ def train(args):
 
     criterion_GAN = nn.BCEWithLogitsLoss()
     criterion_recon = nn.L1Loss()
+
+    # If checkpoint_path is provided, load checkpoint
+    if checkpoint_path:
+        if os.path.exists(checkpoint_path):
+            print(f"Loading checkpoint from {checkpoint_path}")
+            checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=True)
+            generator.load_state_dict(checkpoint["generator_state_dict"])
+            discriminator.load_state_dict(checkpoint["discriminator_state_dict"])
+            g_optimizer.load_state_dict(checkpoint["g_optimizer_state_dict"])
+            d_optimizer.load_state_dict(checkpoint["d_optimizer_state_dict"])
+            start_epoch = checkpoint.get("epoch", 0) + 1
+            print(f"Resumed from epoch {start_epoch}")
+        else:
+            print(f"Checkpoint {checkpoint_path} not found. Starting from scratch.")
+            start_epoch = 0
+    else:
+        start_epoch = 0
 
     train_image_paths = glob(os.path.join(args.train_dir, "*"))
     if not train_image_paths:
@@ -231,7 +255,7 @@ def train(args):
     )
 
     print(f"Starting Training on {device}... Parameters: {args}")
-    for epoch in range(num_epochs):
+    for epoch in range(start_epoch, num_epochs):
         generator.train()
         discriminator.train()
         epoch_d_loss = 0.0
@@ -298,16 +322,22 @@ def train(args):
             f"Epoch [{epoch+1}/{num_epochs}] Completed. Avg D_loss: {avg_d_loss:.4f}, Avg G_loss: {avg_g_loss:.4f}"
         )
 
-        # Save model checkpoints
-        torch.save(
-            generator.state_dict(),
-            os.path.join(CHECKPOINT_DIR, f"generator_epoch_{epoch+1}.pth"),
-        )
-        torch.save(
-            discriminator.state_dict(),
-            os.path.join(CHECKPOINT_DIR, f"discriminator_epoch_{epoch+1}.pth"),
-        )
-        print(f"Saved checkpoints for epoch {epoch+1}.")
+        if (epoch + 1) % 5 == 0:
+            # Save model checkpoints
+            checkpoint_path = os.path.join(
+                CHECKPOINT_DIR, f"checkpoint_epoch_{epoch+1}.pth"
+            )
+            torch.save(
+                {
+                    "epoch": epoch,
+                    "generator_state_dict": generator.state_dict(),
+                    "discriminator_state_dict": discriminator.state_dict(),
+                    "g_optimizer_state_dict": g_optimizer.state_dict(),
+                    "d_optimizer_state_dict": d_optimizer.state_dict(),
+                },
+                checkpoint_path,
+            )
+            print(f"Saved checkpoints for epoch {epoch+1} at {checkpoint_path}.")
 
     print("Training Completed.")
 
@@ -321,7 +351,9 @@ def evaluate(args):
         return
 
     generator = UNetGenerator().to(device)
-    generator.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+    generator.load_state_dict(
+        torch.load(checkpoint_path, map_location=device, weights_only=True)["generator_state_dict"]
+    )
     generator.eval()
 
     test_image_paths = glob(os.path.join(test_dir, "*"))
@@ -394,7 +426,7 @@ def evaluate(args):
     avg_psnr = sum(psnr_values) / len(psnr_values) if psnr_values else 0
     avg_ssim = sum(ssim_values) / len(ssim_values) if ssim_values else 0
 
-    # Compute FID and IS
+    # Compute FID
     fid_score = fid_metric.compute().item()
 
     print(f"Average PSNR: {avg_psnr:.4f}")
@@ -420,7 +452,9 @@ def evaluate_two_images(args):
         return
 
     generator = UNetGenerator().to(device)
-    generator.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=True))
+    generator.load_state_dict(
+        torch.load(checkpoint_path, map_location=device)["generator_state_dict"]
+    )
     generator.eval()
 
     # Load and transform both images
@@ -475,11 +509,20 @@ def evaluate_two_images(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["train", "eval", "eval_2"], default="train")
-    parser.add_argument("--epochs", type=int, default=20)
+    parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--train_dir", type=str, default="data-scenery")
     parser.add_argument("--log_interval", type=int, default=10)
-    parser.add_argument("--checkpoint_path", type=str, default="checkpoints/generator_epoch_20.pth")
+    parser.add_argument(
+        "--checkpoint_path", type=str, default="checkpoints/generator_epoch_20.pth"
+    )
     parser.add_argument("--test_dir", type=str, default="data-scenery-small-test")
+    parser.add_argument(
+        "--image1", type=str, help="Path to first image for eval_2 mode"
+    )
+    parser.add_argument(
+        "--image2", type=str, help="Path to second image for eval_2 mode"
+    )
+
     args = parser.parse_args()
     if args.mode == "train":
         train(args)
