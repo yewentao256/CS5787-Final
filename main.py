@@ -14,11 +14,14 @@ from torchmetrics.functional import (
     peak_signal_noise_ratio,
     structural_similarity_index_measure,
 )
+from torchvision.models import vgg19
+import torch.nn.functional as F
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LEARNING_RATE = 2e-4
 LAMBDA_RECON = 100
 LAMBDA_SSIM = 1
+LAMBDA_PERC = 1
 TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
@@ -83,6 +86,18 @@ transform = transforms.Compose(
     ]
 )
 
+class PerceptualLoss(nn.Module):
+    def __init__(self):
+        super(PerceptualLoss, self).__init__()
+        vgg = vgg19(pretrained=True).features
+        self.vgg_layers = nn.Sequential(*list(vgg.children())[:35]).to(device).eval()
+        for param in self.vgg_layers.parameters():
+            param.requires_grad = False
+
+    def forward(self, x, y):
+        x_features = self.vgg_layers(x)
+        y_features = self.vgg_layers(y)
+        return F.l1_loss(x_features, y_features)
 
 class SceneryDataset(Dataset):
     def __init__(self, image_paths, transform=None):
@@ -211,6 +226,8 @@ class PatchDiscriminator(nn.Module):
         return self.model(inp)
 
 
+perceptual_loss = PerceptualLoss()
+
 def train(args):
     num_epochs = args.epochs
     checkpoint_path = args.checkpoint_path
@@ -303,7 +320,8 @@ def train(args):
             )  # type: ignore
 
             # Update generator loss to include SSIM loss
-            g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss + LAMBDA_SSIM * g_ssim_loss
+            g_perc_loss = perceptual_loss(fake_img, target_img)
+            g_loss = g_adv_loss + LAMBDA_RECON * g_rec_loss + LAMBDA_SSIM * g_ssim_loss + LAMBDA_PERC * g_perc_loss
             g_loss.backward()
             g_optimizer.step()
 
