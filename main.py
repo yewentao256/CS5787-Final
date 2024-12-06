@@ -25,7 +25,7 @@ LAMBDA_PERC = 1
 TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
-CROP_RATIO = 0.5
+CROP_RATIO = 0.4
 
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
