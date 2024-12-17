@@ -4,6 +4,7 @@ __pycache__
 checkpoints
 logs
 results
+.venv
 
 # latex
 *.aux
