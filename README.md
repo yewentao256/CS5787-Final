@@ -13,6 +13,7 @@ python diffusion.py --mode train --epochs 30
 
 ```bash
 python main.py --mode train --checkpoint_path checkpoints/checkpoint_epoch_30.pth --epochs 50
+python diffusion.py --mode train --checkpoint_path checkpoints/checkpoint_epoch_21.pth --epochs 100
 ```
 
 ### Eval

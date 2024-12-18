@@ -243,7 +243,7 @@ def p_sample(model, x, t, input_img, mask):
 
 def p_sample_loop(model, shape, input_img, mask):
     x = torch.randn(shape, device=device)
-    x = input_img * mask + x * (1 - mask)  # 初始化
+    x = input_img * mask + x * (1 - mask)
 
     for i in reversed(range(T)):
         t = torch.tensor([i], device=device).long().expand(shape[0])
@@ -261,6 +261,13 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, betas=(0.5, 0.999))
 
     start_epoch = 0
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        print(f"Loading checkpoint from {checkpoint_path}...")
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint["epoch"] + 1  # 下一轮的 epoch
+        print(f"Checkpoint loaded. Resuming from epoch {start_epoch}.")
     train_image_paths = glob(os.path.join(args.train_dir, "*"))
     if not train_image_paths:
         print(f"No training images found in {args.train_dir}. Exiting training.")
