@@ -34,16 +34,13 @@ def crop_image(img, crop_ratio=CROP_RATIO):
     H_crop = int(H * crop_ratio)
     W_crop = int(W * crop_ratio)
 
-    # target_img 保持完整图像
     target_img = img.clone()
 
-    # input_img 在未知区域用0填充
     input_img = img.clone()
-    # 未知区域为图像的左下角和右上角两个方块
     input_img[:, H - H_crop :, :W_crop] = 0
     input_img[:, :H_crop, W - W_crop :] = 0
 
-    # mask：1表示已知区域，0表示未知区域
+    # 1 for known place，0 for unknown place
     mask = torch.ones((1, H, W), dtype=img.dtype, device=img.device)
     mask[:, H - H_crop :, :W_crop] = 0
     mask[:, :H_crop, W - W_crop :] = 0
@@ -94,19 +91,17 @@ class SceneryDataset(Dataset):
         return crop_image(img)
 
 def get_timestep_embedding(timesteps, dim):
-    # 基于高频正余弦函数的时间步编码
+    # Time step embedding based on high-frequency sine and cosine functions
     # timesteps: [B], int
-    # 返回 [B, dim] 的编码
     half_dim = dim // 2
     freq = torch.exp(
         torch.log(torch.tensor(10000.0, device=timesteps.device)) * 
         torch.linspace(0, 1, half_dim, device=timesteps.device)
     )
     freq = freq.unsqueeze(0)  # [1, half_dim]
-    # timesteps为整数，将其转换为float
     angles = timesteps.float().unsqueeze(1) * freq  # [B, half_dim]
     embedding = torch.cat([torch.sin(angles), torch.cos(angles)], dim=-1)  # [B, dim]
-    if dim % 2 == 1:  # 如果为奇数则再补一列
+    if dim % 2 == 1:
         embedding = torch.cat([embedding, torch.zeros_like(embedding[:, :1])], dim=-1)
     return embedding
 
@@ -128,10 +123,8 @@ class UNetDiffusionModel(nn.Module):
         super(UNetDiffusionModel, self).__init__()
         self.time_embed_dim = time_embed_dim
 
-        # 时间嵌入 MLP
         self.time_mlp = TimeEmbedding(time_embed_dim, hidden_dim=features*8)
 
-        # 编码器
         self.encoder1 = self.encode_block(in_channels, features, 4, 2, 1)
         self.encoder2 = self.encode_block(features, features * 2, 4, 2, 1)
         self.encoder3 = self.encode_block(features * 2, features * 4, 4, 2, 1)
@@ -141,7 +134,6 @@ class UNetDiffusionModel(nn.Module):
         self.encoder7 = self.encode_block(features * 8, features * 8, 4, 2, 1)
         self.encoder8 = self.encode_block(features * 8, features * 8, 4, 2, 1)
 
-        # 解码器
         self.decoder1 = self.decode_block(features * 8, features * 8, 4, 2, 1)
         self.decoder2 = self.decode_block(features * 16, features * 8, 4, 2, 1)
         self.decoder3 = self.decode_block(features * 16, features * 8, 4, 2, 1)
@@ -174,12 +166,10 @@ class UNetDiffusionModel(nn.Module):
         )
 
     def forward(self, x, t):
-        # 时间步嵌入
         t_embed = get_timestep_embedding(t, self.time_embed_dim)  # [B, time_embed_dim]
         t_embed = self.time_mlp(t_embed)  # [B, features*8]
         t_embed = t_embed.unsqueeze(-1).unsqueeze(-1)  # [B, features*8, 1, 1]
 
-        # 编码
         enc1 = self.encoder1(x)
         enc2 = self.encoder2(enc1)
         enc3 = self.encoder3(enc2)
@@ -189,10 +179,8 @@ class UNetDiffusionModel(nn.Module):
         enc7 = self.encoder7(enc6)
         enc8 = self.encoder8(enc7)
 
-        # 在bottleneck处添加时间嵌入
         enc8 = enc8 + t_embed
 
-        # 解码（不重复添加t_embed，以避免通道数不匹配）
         dec1 = self.decoder1(enc8)
         dec1 = torch.cat([dec1, enc7], dim=1)
 
@@ -237,9 +225,9 @@ def q_sample(x_start, t, noise=None):
     return sqrt_alpha_cumprod_t * x_start + sqrt_one_minus_alpha_cumprod_t * noise
 
 def p_sample(model, x, t, input_img, mask):
-    # x: 当前带噪声的图像
-    # 条件输入合成: noisy_image(=x), mask, input_img
-    # 模型输入通道=7
+    # x: current image with noise
+    # conditional input: noisy_image(=x), mask, input_img
+    # input channel=7
     cond_input = torch.cat([x, mask, input_img], dim=1)
     noise_pred = model(cond_input, t)
     x0_pred = (x - sqrt_one_minus_alpha_cumprod[t].reshape(-1,1,1,1)*noise_pred) / sqrt_alpha_cumprod[t].reshape(-1,1,1,1)
@@ -260,7 +248,6 @@ def p_sample_loop(model, shape, input_img, mask):
     for i in reversed(range(T)):
         t = torch.tensor([i], device=device).long().expand(shape[0])
         x = p_sample(model, x, t, input_img, mask)
-        # 每一步采样后，重置已知区域保持不变
         x = input_img * mask + x * (1 - mask)
         
     return x
@@ -302,12 +289,11 @@ def train(args):
             noise = torch.randn_like(target_img)
             x_t = q_sample(target_img, t, noise=noise)
 
-            # 合成noisy_image
             noisy_image = input_img * mask + x_t * (1 - mask)
             model_input = torch.cat([noisy_image, mask, input_img], dim=1)
 
             noise_pred = model(model_input, t)
-            unknown_area = (1 - mask)  # 未知区域
+            unknown_area = (1 - mask)
             loss = F.mse_loss(noise_pred * unknown_area, noise * unknown_area)
             loss.backward()
             optimizer.step()
@@ -371,7 +357,7 @@ def evaluate(args):
             print(f"Unable to open image {img_path}. Error: {e}")
             continue
         img_transformed = transform(img)
-        input_img, target_img, mask = crop_image(img_transformed)
+        input_img, _, mask = crop_image(img_transformed)
         input_tensor = input_img.unsqueeze(0).to(device)
         mask_tensor = mask.unsqueeze(0).to(device)
         original_tensor = img_transformed.unsqueeze(0).to(device)
@@ -394,7 +380,6 @@ def evaluate(args):
         psnr_values.append(psnr_value)
         ssim_values.append(ssim_value)
 
-        # 更新FID度量
         output_uint8 = (output_tensor_scaled * 255).to(torch.uint8)
         target_uint8 = (original_tensor_scaled * 255).to(torch.uint8)
         fid_metric.update(output_uint8, real=False)
