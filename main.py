@@ -14,7 +14,7 @@ from torchmetrics.functional import (
     peak_signal_noise_ratio,
     structural_similarity_index_measure,
 )
-from torchvision.models import vgg19
+from torchvision.models import vgg19, VGG19_Weights
 import torch.nn.functional as F
 
 BATCH_SIZE = 16
@@ -25,7 +25,7 @@ LAMBDA_PERC = 1
 TARGET_SIZE = 256
 CHECKPOINT_DIR = "checkpoints"
 RESULTS_DIR = "results"
-CROP_RATIO = 0.4
+CROP_RATIO = 0.5
 
 os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 os.makedirs(RESULTS_DIR, exist_ok=True)
@@ -89,7 +89,7 @@ transform = transforms.Compose(
 class PerceptualLoss(nn.Module):
     def __init__(self):
         super(PerceptualLoss, self).__init__()
-        vgg = vgg19(pretrained=True).features
+        vgg = vgg19(weights=VGG19_Weights.IMAGENET1K_V1).features
         self.vgg_layers = nn.Sequential(*list(vgg.children())[:35]).to(device).eval()
         for param in self.vgg_layers.parameters():
             param.requires_grad = False
