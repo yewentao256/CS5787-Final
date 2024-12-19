@@ -1,0 +1,306 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="864pt" height="123pt" viewBox="0.00 0.00 864.00 122.66">
+<g id="graph0" class="graph" transform="scale(0.309738 0.309738) rotate(0) translate(4 392)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-392 2785.46,-392 2785.46,4 -4,4"/>
+<!-- E1 -->
+<g id="node1" class="node">
+<title>E1</title>
+<polygon fill="lightblue" stroke="lightblue" points="94.33,-56 0,-56 0,0 94.33,0 94.33,-56"/>
+<text text-anchor="middle" x="47.17" y="-43" font-family="Times,serif" font-size="10.00">Encoder1</text>
+<text text-anchor="middle" x="47.17" y="-31" font-family="Times,serif" font-size="10.00">Conv2d(3,64,4,2,1)</text>
+<text text-anchor="middle" x="47.17" y="-19" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="47.17" y="-7" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E2 -->
+<g id="node2" class="node">
+<title>E2</title>
+<polygon fill="lightblue" stroke="lightblue" points="235.66,-100 131.33,-100 131.33,-44 235.66,-44 235.66,-100"/>
+<text text-anchor="middle" x="183.5" y="-87" font-family="Times,serif" font-size="10.00">Encoder2</text>
+<text text-anchor="middle" x="183.5" y="-75" font-family="Times,serif" font-size="10.00">Conv2d(64,128,4,2,1)</text>
+<text text-anchor="middle" x="183.5" y="-63" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="183.5" y="-51" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E1&#45;&gt;E2 -->
+<g id="edge1" class="edge">
+<title>E1-&gt;E2</title>
+<path fill="none" stroke="black" d="M94.77,-43.27C102.98,-45.95 111.63,-48.79 120.19,-51.59"/>
+<polygon fill="black" stroke="black" points="118.89,-54.85 129.48,-54.64 121.07,-48.2 118.89,-54.85"/>
+</g>
+<!-- D8 -->
+<g id="node16" class="node">
+<title>D8</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="2642.75,-50 2502.32,-50 2502.32,-6 2642.75,-6 2642.75,-50"/>
+<text text-anchor="middle" x="2572.53" y="-37" font-family="Times,serif" font-size="10.00">Decoder8</text>
+<text text-anchor="middle" x="2572.53" y="-25" font-family="Times,serif" font-size="10.00">ConvTranspose2d(128,3,4,2,1)</text>
+<text text-anchor="middle" x="2572.53" y="-13" font-family="Times,serif" font-size="10.00">Tanh</text>
+</g>
+<!-- E1&#45;&gt;D8 -->
+<g id="edge15" class="edge">
+<title>E1-&gt;D8</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M94.7,-21.79C120.51,-18.86 153.23,-16 182.5,-16 182.5,-16 182.5,-16 2393.6,-16 2425.31,-16 2460.13,-17.92 2490.49,-20.23"/>
+<polygon fill="blue" stroke="blue" points="2490.14,-23.71 2500.38,-21 2490.69,-16.73 2490.14,-23.71"/>
+<text text-anchor="middle" x="1144.48" y="-20.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E3 -->
+<g id="node3" class="node">
+<title>E3</title>
+<polygon fill="lightblue" stroke="lightblue" points="381.99,-148 272.66,-148 272.66,-92 381.99,-92 381.99,-148"/>
+<text text-anchor="middle" x="327.33" y="-135" font-family="Times,serif" font-size="10.00">Encoder3</text>
+<text text-anchor="middle" x="327.33" y="-123" font-family="Times,serif" font-size="10.00">Conv2d(128,256,4,2,1)</text>
+<text text-anchor="middle" x="327.33" y="-111" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="327.33" y="-99" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E2&#45;&gt;E3 -->
+<g id="edge2" class="edge">
+<title>E2-&gt;E3</title>
+<path fill="none" stroke="black" d="M236.1,-89.46C244.45,-92.29 253.19,-95.25 261.81,-98.17"/>
+<polygon fill="black" stroke="black" points="260.58,-101.45 271.18,-101.34 262.83,-94.82 260.58,-101.45"/>
+</g>
+<!-- D7 -->
+<g id="node15" class="node">
+<title>D7</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="2465.32,-100 2319.89,-100 2319.89,-44 2465.32,-44 2465.32,-100"/>
+<text text-anchor="middle" x="2392.6" y="-87" font-family="Times,serif" font-size="10.00">Decoder7</text>
+<text text-anchor="middle" x="2392.6" y="-75" font-family="Times,serif" font-size="10.00">ConvTranspose2d(256,64,4,2,1)</text>
+<text text-anchor="middle" x="2392.6" y="-63" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="2392.6" y="-51" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E2&#45;&gt;D7 -->
+<g id="edge16" class="edge">
+<title>E2-&gt;D7</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M235.99,-67.7C262.89,-65.8 296.36,-64 326.33,-64 326.33,-64 326.33,-64 2208.67,-64 2241.23,-64 2277.02,-65.28 2308.24,-66.82"/>
+<polygon fill="blue" stroke="blue" points="2307.85,-70.3 2318.01,-67.32 2308.2,-63.31 2307.85,-70.3"/>
+<text text-anchor="middle" x="1144.48" y="-68.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E4 -->
+<g id="node4" class="node">
+<title>E4</title>
+<polygon fill="lightblue" stroke="lightblue" points="528.32,-196 418.99,-196 418.99,-140 528.32,-140 528.32,-196"/>
+<text text-anchor="middle" x="473.66" y="-183" font-family="Times,serif" font-size="10.00">Encoder4</text>
+<text text-anchor="middle" x="473.66" y="-171" font-family="Times,serif" font-size="10.00">Conv2d(256,512,4,2,1)</text>
+<text text-anchor="middle" x="473.66" y="-159" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="473.66" y="-147" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E3&#45;&gt;E4 -->
+<g id="edge3" class="edge">
+<title>E3-&gt;E4</title>
+<path fill="none" stroke="black" d="M382.48,-138.01C390.8,-140.78 399.47,-143.66 407.99,-146.5"/>
+<polygon fill="black" stroke="black" points="406.65,-149.74 417.24,-149.57 408.86,-143.09 406.65,-149.74"/>
+</g>
+<!-- D6 -->
+<g id="node14" class="node">
+<title>D6</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="2282.89,-148 2132.46,-148 2132.46,-92 2282.89,-92 2282.89,-148"/>
+<text text-anchor="middle" x="2207.67" y="-135" font-family="Times,serif" font-size="10.00">Decoder6</text>
+<text text-anchor="middle" x="2207.67" y="-123" font-family="Times,serif" font-size="10.00">ConvTranspose2d(512,128,4,2,1)</text>
+<text text-anchor="middle" x="2207.67" y="-111" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="2207.67" y="-99" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E3&#45;&gt;D6 -->
+<g id="edge17" class="edge">
+<title>E3-&gt;D6</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M382.43,-115.58C409.5,-113.73 442.79,-112 472.66,-112 472.66,-112 472.66,-112 2018.75,-112 2052.19,-112 2088.96,-113.28 2121.03,-114.82"/>
+<polygon fill="blue" stroke="blue" points="2120.5,-118.29 2130.66,-115.29 2120.84,-111.3 2120.5,-118.29"/>
+<text text-anchor="middle" x="1144.48" y="-116.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E5 -->
+<g id="node5" class="node">
+<title>E5</title>
+<polygon fill="lightblue" stroke="lightblue" points="674.65,-244 565.32,-244 565.32,-188 674.65,-188 674.65,-244"/>
+<text text-anchor="middle" x="619.99" y="-231" font-family="Times,serif" font-size="10.00">Encoder5</text>
+<text text-anchor="middle" x="619.99" y="-219" font-family="Times,serif" font-size="10.00">Conv2d(512,512,4,2,1)</text>
+<text text-anchor="middle" x="619.99" y="-207" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="619.99" y="-195" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E4&#45;&gt;E5 -->
+<g id="edge4" class="edge">
+<title>E4-&gt;E5</title>
+<path fill="none" stroke="black" d="M528.81,-186.01C537.13,-188.78 545.8,-191.66 554.32,-194.5"/>
+<polygon fill="black" stroke="black" points="552.98,-197.74 563.57,-197.57 555.19,-191.09 552.98,-197.74"/>
+</g>
+<!-- D5 -->
+<g id="node13" class="node">
+<title>D5</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="2095.46,-196 1940.03,-196 1940.03,-140 2095.46,-140 2095.46,-196"/>
+<text text-anchor="middle" x="2017.75" y="-183" font-family="Times,serif" font-size="10.00">Decoder5</text>
+<text text-anchor="middle" x="2017.75" y="-171" font-family="Times,serif" font-size="10.00">ConvTranspose2d(1024,256,4,2,1)</text>
+<text text-anchor="middle" x="2017.75" y="-159" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="2017.75" y="-147" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E4&#45;&gt;D5 -->
+<g id="edge18" class="edge">
+<title>E4-&gt;D5</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M528.76,-163.58C555.83,-161.73 589.12,-160 618.99,-160 618.99,-160 618.99,-160 1826.32,-160 1859.76,-160 1896.49,-161.25 1928.69,-162.76"/>
+<polygon fill="blue" stroke="blue" points="1928.2,-166.24 1938.36,-163.23 1928.54,-159.25 1928.2,-166.24"/>
+<text text-anchor="middle" x="1144.48" y="-164.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E6 -->
+<g id="node6" class="node">
+<title>E6</title>
+<polygon fill="lightblue" stroke="lightblue" points="820.98,-292 711.65,-292 711.65,-236 820.98,-236 820.98,-292"/>
+<text text-anchor="middle" x="766.32" y="-279" font-family="Times,serif" font-size="10.00">Encoder6</text>
+<text text-anchor="middle" x="766.32" y="-267" font-family="Times,serif" font-size="10.00">Conv2d(512,512,4,2,1)</text>
+<text text-anchor="middle" x="766.32" y="-255" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="766.32" y="-243" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E5&#45;&gt;E6 -->
+<g id="edge5" class="edge">
+<title>E5-&gt;E6</title>
+<path fill="none" stroke="black" d="M675.14,-234.01C683.46,-236.78 692.13,-239.66 700.65,-242.5"/>
+<polygon fill="black" stroke="black" points="699.31,-245.74 709.9,-245.57 701.52,-239.09 699.31,-245.74"/>
+</g>
+<!-- D4 -->
+<g id="node12" class="node">
+<title>D4</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="1903.03,-244 1747.6,-244 1747.6,-188 1903.03,-188 1903.03,-244"/>
+<text text-anchor="middle" x="1825.32" y="-231" font-family="Times,serif" font-size="10.00">Decoder4</text>
+<text text-anchor="middle" x="1825.32" y="-219" font-family="Times,serif" font-size="10.00">ConvTranspose2d(1024,512,4,2,1)</text>
+<text text-anchor="middle" x="1825.32" y="-207" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="1825.32" y="-195" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E5&#45;&gt;D4 -->
+<g id="edge19" class="edge">
+<title>E5-&gt;D4</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M675.09,-211.58C702.16,-209.73 735.45,-208 765.32,-208 765.32,-208 765.32,-208 1633.89,-208 1667.34,-208 1704.06,-209.25 1736.26,-210.76"/>
+<polygon fill="blue" stroke="blue" points="1735.77,-214.24 1745.93,-211.23 1736.11,-207.25 1735.77,-214.24"/>
+<text text-anchor="middle" x="1144.48" y="-212.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E7 -->
+<g id="node7" class="node">
+<title>E7</title>
+<polygon fill="lightblue" stroke="lightblue" points="967.31,-340 857.98,-340 857.98,-284 967.31,-284 967.31,-340"/>
+<text text-anchor="middle" x="912.65" y="-327" font-family="Times,serif" font-size="10.00">Encoder7</text>
+<text text-anchor="middle" x="912.65" y="-315" font-family="Times,serif" font-size="10.00">Conv2d(512,512,4,2,1)</text>
+<text text-anchor="middle" x="912.65" y="-303" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="912.65" y="-291" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E6&#45;&gt;E7 -->
+<g id="edge6" class="edge">
+<title>E6-&gt;E7</title>
+<path fill="none" stroke="black" d="M821.47,-282.01C829.79,-284.78 838.46,-287.66 846.98,-290.5"/>
+<polygon fill="black" stroke="black" points="845.64,-293.74 856.23,-293.57 847.85,-287.09 845.64,-293.74"/>
+</g>
+<!-- D3 -->
+<g id="node11" class="node">
+<title>D3</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="1710.6,-292 1555.17,-292 1555.17,-236 1710.6,-236 1710.6,-292"/>
+<text text-anchor="middle" x="1632.89" y="-279" font-family="Times,serif" font-size="10.00">Decoder3</text>
+<text text-anchor="middle" x="1632.89" y="-267" font-family="Times,serif" font-size="10.00">ConvTranspose2d(1024,512,4,2,1)</text>
+<text text-anchor="middle" x="1632.89" y="-255" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="1632.89" y="-243" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E6&#45;&gt;D3 -->
+<g id="edge20" class="edge">
+<title>E6-&gt;D3</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M821.42,-259.58C848.49,-257.73 881.78,-256 911.65,-256 911.65,-256 911.65,-256 1441.46,-256 1474.91,-256 1511.63,-257.25 1543.83,-258.76"/>
+<polygon fill="blue" stroke="blue" points="1543.35,-262.24 1553.5,-259.23 1543.68,-255.25 1543.35,-262.24"/>
+<text text-anchor="middle" x="1144.48" y="-260.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E8 -->
+<g id="node8" class="node">
+<title>E8</title>
+<polygon fill="lightblue" stroke="lightblue" points="1113.64,-388 1004.31,-388 1004.31,-332 1113.64,-332 1113.64,-388"/>
+<text text-anchor="middle" x="1058.98" y="-375" font-family="Times,serif" font-size="10.00">Encoder8</text>
+<text text-anchor="middle" x="1058.98" y="-363" font-family="Times,serif" font-size="10.00">Conv2d(512,512,4,2,1)</text>
+<text text-anchor="middle" x="1058.98" y="-351" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="1058.98" y="-339" font-family="Times,serif" font-size="10.00">LeakyReLU</text>
+</g>
+<!-- E7&#45;&gt;E8 -->
+<g id="edge7" class="edge">
+<title>E7-&gt;E8</title>
+<path fill="none" stroke="black" d="M967.8,-330.01C976.12,-332.78 984.79,-335.66 993.31,-338.5"/>
+<polygon fill="black" stroke="black" points="991.97,-341.74 1002.56,-341.57 994.18,-335.09 991.97,-341.74"/>
+</g>
+<!-- D2 -->
+<g id="node10" class="node">
+<title>D2</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="1518.17,-340 1362.75,-340 1362.75,-284 1518.17,-284 1518.17,-340"/>
+<text text-anchor="middle" x="1440.46" y="-327" font-family="Times,serif" font-size="10.00">Decoder2</text>
+<text text-anchor="middle" x="1440.46" y="-315" font-family="Times,serif" font-size="10.00">ConvTranspose2d(1024,512,4,2,1)</text>
+<text text-anchor="middle" x="1440.46" y="-303" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="1440.46" y="-291" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E7&#45;&gt;D2 -->
+<g id="edge21" class="edge">
+<title>E7-&gt;D2</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M967.45,-312C1057.95,-312 1241.48,-312 1351.12,-312"/>
+<polygon fill="blue" stroke="blue" points="1350.96,-315.5 1360.96,-312 1350.96,-308.5 1350.96,-315.5"/>
+<text text-anchor="middle" x="1144.48" y="-316.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- D1 -->
+<g id="node9" class="node">
+<title>D1</title>
+<polygon fill="lightgreen" stroke="lightgreen" points="1325.75,-388 1175.32,-388 1175.32,-332 1325.75,-332 1325.75,-388"/>
+<text text-anchor="middle" x="1250.53" y="-375" font-family="Times,serif" font-size="10.00">Decoder1</text>
+<text text-anchor="middle" x="1250.53" y="-363" font-family="Times,serif" font-size="10.00">ConvTranspose2d(512,512,4,2,1)</text>
+<text text-anchor="middle" x="1250.53" y="-351" font-family="Times,serif" font-size="10.00">BatchNorm2d</text>
+<text text-anchor="middle" x="1250.53" y="-339" font-family="Times,serif" font-size="10.00">ReLU</text>
+</g>
+<!-- E8&#45;&gt;D1 -->
+<g id="edge22" class="edge">
+<title>E8-&gt;D1</title>
+<path fill="none" stroke="blue" stroke-dasharray="5,2" d="M1114.04,-360C1129.57,-360 1146.9,-360 1163.84,-360"/>
+<polygon fill="blue" stroke="blue" points="1163.38,-363.5 1173.38,-360 1163.38,-356.5 1163.38,-363.5"/>
+<text text-anchor="middle" x="1144.48" y="-364.2" font-family="Times,serif" font-size="14.00">Skip</text>
+</g>
+<!-- E8&#45;&gt;D1 -->
+<g id="edge23" class="edge">
+<title>E8-&gt;D1</title>
+<path fill="none" stroke="black" d="M1114.04,-360C1129.57,-360 1146.9,-360 1163.84,-360"/>
+<polygon fill="black" stroke="black" points="1163.38,-363.5 1173.38,-360 1163.38,-356.5 1163.38,-363.5"/>
+</g>
+<!-- D1&#45;&gt;D2 -->
+<g id="edge8" class="edge">
+<title>D1-&gt;D2</title>
+<path fill="none" stroke="black" d="M1326.08,-340.96C1334.41,-338.83 1342.96,-336.65 1351.45,-334.48"/>
+<polygon fill="black" stroke="black" points="1352.25,-337.89 1361.07,-332.02 1350.52,-331.1 1352.25,-337.89"/>
+</g>
+<!-- D2&#45;&gt;D3 -->
+<g id="edge9" class="edge">
+<title>D2-&gt;D3</title>
+<path fill="none" stroke="black" d="M1518.64,-292.55C1526.96,-290.45 1535.46,-288.31 1543.89,-286.18"/>
+<polygon fill="black" stroke="black" points="1544.6,-289.61 1553.44,-283.77 1542.89,-282.82 1544.6,-289.61"/>
+</g>
+<!-- D3&#45;&gt;D4 -->
+<g id="edge10" class="edge">
+<title>D3-&gt;D4</title>
+<path fill="none" stroke="black" d="M1711.07,-244.55C1719.38,-242.45 1727.89,-240.31 1736.32,-238.18"/>
+<polygon fill="black" stroke="black" points="1737.03,-241.61 1745.87,-235.77 1735.32,-234.82 1737.03,-241.61"/>
+</g>
+<!-- D4&#45;&gt;D5 -->
+<g id="edge11" class="edge">
+<title>D4-&gt;D5</title>
+<path fill="none" stroke="black" d="M1903.5,-196.55C1911.81,-194.45 1920.32,-192.31 1928.75,-190.18"/>
+<polygon fill="black" stroke="black" points="1929.46,-193.61 1938.3,-187.77 1927.75,-186.82 1929.46,-193.61"/>
+</g>
+<!-- D5&#45;&gt;D6 -->
+<g id="edge12" class="edge">
+<title>D5-&gt;D6</title>
+<path fill="none" stroke="black" d="M2095.73,-148.34C2104.11,-146.2 2112.69,-144.01 2121.17,-141.84"/>
+<polygon fill="black" stroke="black" points="2121.95,-145.25 2130.77,-139.39 2120.22,-138.47 2121.95,-145.25"/>
+</g>
+<!-- D6&#45;&gt;D7 -->
+<g id="edge13" class="edge">
+<title>D6-&gt;D7</title>
+<path fill="none" stroke="black" d="M2283.34,-100.41C2291.65,-98.23 2300.16,-96 2308.56,-93.79"/>
+<polygon fill="black" stroke="black" points="2309.29,-97.22 2318.07,-91.29 2307.51,-90.45 2309.29,-97.22"/>
+</g>
+<!-- D7&#45;&gt;D8 -->
+<g id="edge14" class="edge">
+<title>D7-&gt;D8</title>
+<path fill="none" stroke="black" d="M2465.72,-54.17C2474.02,-52.11 2482.53,-50.01 2490.94,-47.93"/>
+<polygon fill="black" stroke="black" points="2491.57,-51.38 2500.44,-45.58 2489.89,-44.58 2491.57,-51.38"/>
+</g>
+<!-- Output -->
+<g id="node17" class="node">
+<title>Output</title>
+<ellipse fill="lightyellow" stroke="lightyellow" cx="2730.6" cy="-28" rx="50.85" ry="18"/>
+<text text-anchor="middle" x="2730.6" y="-25" font-family="Times,serif" font-size="10.00">Generated Image</text>
+</g>
+<!-- D8&#45;&gt;Output -->
+<g id="edge24" class="edge">
+<title>D8-&gt;Output</title>
+<path fill="none" stroke="black" d="M2642.89,-28C2651.31,-28 2659.85,-28 2668.14,-28"/>
+<polygon fill="black" stroke="black" points="2668.12,-31.5 2678.12,-28 2668.12,-24.5 2668.12,-31.5"/>
+</g>
+</g>
+</svg>
