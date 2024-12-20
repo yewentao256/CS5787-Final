@@ -305,7 +305,7 @@ Comparing the three approaches:
     
     \item \textbf{Pretrained Stable Diffusion:} Achieves superior visual fidelity, realism, and detail, even in challenging scenarios. However, its success relies on massive pretraining and significantly greater computational resources. For practical scenarios without such resources, replicating Stable Diffusion’s performance from scratch is infeasible.
     
-    \item \textbf{Non-Pretrained Diffusion:} Without large-scale pretraining and extensive compute, a scratch-trained diffusion model underperforms the GAN approach. The outputs are generally incoherent and lack semantic structure, highlighting the difficulty of training diffusion models in data-constrained and resource-limited settings.
+    \item \textbf{Non-Pretrained Diffusion:} Without large-scale pretraining and extensive compute, a diffusion model trained from scratch underperforms our GAN approach. The outputs are generally incoherent and lack semantic structure, highlighting the difficulty of training diffusion models in data-constrained and resource-limited settings.
 \end{itemize}
 
 Overall, our experiments show that while pretrained diffusion models can achieve remarkable realism, their resource requirements are prohibitive for many applications. In contrast, our GAN-based approach provides a strong balance between performance quality and computational feasibility, making it a practical solution for image outpainting and hole-filling tasks.
