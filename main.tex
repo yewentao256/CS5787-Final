@@ -277,21 +277,7 @@ When tackling the sparse-quadrant scenario, as shown in Figure~\ref{fig:stable_d
 
 \subsection*{Experiment 3: Non-Pretrained Diffusion Model}
 
-Finally, we attempted to train a diffusion-based model from scratch using the RePaint framework \cite{Lugmayr2022}. Unlike Stable Diffusion, which benefits from massive pretraining, our scratch-trained diffusion model is limited to the NS-Outpainting dataset and a modest training budget. Figures~\ref{fig:diffusion_step_2_1} through \ref{fig:diffusion_step_2_5} show several attempts at same-scene completion. These results are significantly weaker, with the model struggling to produce coherent global structures or realistic textures. While some color patterns and vague shapes emerge, the outputs lack semantic consistency and visually pleasing features.
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\linewidth]{diffusion_step_2_1}
-    \caption{Non-pretrained diffusion model output for same-scene completion. The generated region appears blurry and lacks coherent structure.}
-    \label{fig:diffusion_step_2_1}
-\end{figure}
-
-\begin{figure}[h!]
-    \centering
-    \includegraphics[width=\linewidth]{diffusion_step_2_2}
-    \caption{Non-pretrained diffusion model output for same-scene completion. The model fails to reconstruct meaningful details or textures and produces amorphous shapes.}
-    \label{fig:diffusion_step_2_2}
-\end{figure}
+Finally, we attempted to train a diffusion-based model from scratch using the RePaint framework \cite{Lugmayr2022}. Unlike Stable Diffusion, which benefits from massive pretraining, our scratch-trained diffusion model is limited to the NS-Outpainting dataset and a modest training budget. Figures~\ref{fig:diffusion_step_2_3} through \ref{fig:diffusion_step_2_5} show several attempts at same-scene completion. These results are significantly weaker, with the model struggling to produce coherent global structures or realistic textures. While some color patterns and vague shapes emerge, the outputs lack semantic consistency and visually pleasing features.
 
 \begin{figure}[h!]
     \centering
