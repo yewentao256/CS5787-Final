@@ -109,7 +109,7 @@ The total generator loss is a weighted combination of these terms:
 
 \subsection*{Implementation Details}
 
-Our implementation uses PyTorch, and we initialize weights to the $[-1, 1]$ range. The models are trained using the Adam optimizer (Kingma \& Ba, 2015) with a learning rate of $2 \times 10^{-4}$ and $\beta_1 = 0.5$, $\beta_2 = 0.999$. We periodically save model checkpoints and evaluate intermediate outputs to ensure that the generator’s outputs become progressively more realistic and semantically meaningful. 
+Our implementation uses PyTorch, and we normalize inputs to the $[-1, 1]$ range. The models are trained using the Adam optimizer (Kingma \& Ba, 2015) with a learning rate of $2 \times 10^{-4}$ and $\beta_1 = 0.5$, $\beta_2 = 0.999$. We periodically save model checkpoints and evaluate intermediate outputs to ensure that the generator’s outputs become progressively more realistic and semantically meaningful. 
 
 By combining the strengths of the U-Net generator, PatchGAN discriminator, and multiple complementary loss functions, our method is able to learn complex inter-image relationships and produce visually and contextually coherent transitions between two given images. The following sections detail our experimental setup and results, demonstrating the effectiveness of this approach in bridging visually distinct images into a single, harmonious scene.
 
