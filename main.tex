@@ -106,21 +106,185 @@ The total generator loss is a weighted combination of these terms:
 \mathcal{L}_{G} = \mathcal{L}_{\text{GAN}}(G,D) + \lambda_{\text{recon}}\mathcal{L}_{\text{recon}}(G) + \lambda_{\text{SSIM}}\mathcal{L}_{\text{SSIM}}(G) + \lambda_{\text{perc}}\mathcal{L}_{\text{perc}}(G),
 \]
 
-\section*{Results}
-To evaluate our model, we performed qualitative and quantitative experiments on both the NS-Outpainting dataset and additional custom images. Visual results demonstrate that our model successfully generates intermediate regions that are visually coherent and semantically consistent with the surrounding parts of the image.
+
+\subsection*{Implementation Details}
+
+Our implementation uses PyTorch, and we initialize weights to the $[-1, 1]$ range. The models are trained using the Adam optimizer (Kingma \& Ba, 2015) with a learning rate of $2 \times 10^{-4}$ and $\beta_1 = 0.5$, $\beta_2 = 0.999$. We periodically save model checkpoints and evaluate intermediate outputs to ensure that the generator’s outputs become progressively more realistic and semantically meaningful. 
+
+By combining the strengths of the U-Net generator, PatchGAN discriminator, and multiple complementary loss functions, our method is able to learn complex inter-image relationships and produce visually and contextually coherent transitions between two given images. The following sections detail our experimental setup and results, demonstrating the effectiveness of this approach in bridging visually distinct images into a single, harmonious scene.
+
+\section*{Experiments}
+
+\subsection*{Experimentation Steps}
+
+We completed the following steps when experimenting on our models, sometimes stopping early and not completing all steps if we did not see comparable results to our previous work:
+
+\begin{enumerate}
+    \item \textbf{Training:} As explained above, we removed the upper right and lower left quadrants of each training image and computed loss metrics on the model’s prediction of the original intact image without any quadrants removed. We then computed metrics on the test set by evaluating the model’s prediction of the uncropped test set images, using cropped test set images with their upper right and lower left quadrants removed as input.
+    
+    \item \textbf{Visual inspection of results on the same cropped input image:} Before computing metrics, we visually inspected each model’s outputs when computing predictions from the test set. When this step yielded low or unrecognizable resemblance to the input image, we stopped and revised the model.
+    
+    \item \textbf{Metrics computation:} We computed the Peak Signal-to-Noise (PSNR), Structural Similarity Index Measure (SSIM), and Fréchet Inception Distance (FID) metrics for each model on the test images.
+    
+    \item \textbf{Visual inspection of results on two different cropped input images:} In contrast to step 2, where we used two quadrants of the same image, here we used the upper right quadrant of one image and the lower left quadrant of a different image as input to the model and visually inspected the resulting completed image of an intact scene.
+    
+    \item \textbf{Visual inspection with larger cropping mask of one input image:} Here we repeated step 2, but instead of using the entire lower left quadrant and the entire upper right quadrant as input (which meet at the center of the image), we only used the bottom left portion of the lower left quadrant and the upper right portion of the upper right quadrant, which do not meet in any part of the image.
+    
+    \item \textbf{Visual inspection with larger cropping mask of two different images:} Here we used a larger mask as in step 5 on two distinct images of different scenes, as in step 4.
+\end{enumerate}
+
+We trained and tested all of our models on the NS-Outpainting dataset containing wide panoramic images of scenery. Some example images from it are shown below:
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\linewidth]{output1.jpg}
-    \caption{Example of image outpainting between two input scenes.}
-    \label{fig:output1}
+    \includegraphics[width=\linewidth]{ns_dataset}
+    \caption{Example images from the NS-Outpainting dataset that we used to train our models.}
+    \label{fig:ns_dataset}
 \end{figure}
 
+\subsection*{Models}
 
-Quantitative evaluation was performed using metrics like the Structural Similarity Index (SSIM) and Peak Signal-to-Noise Ratio (PSNR), where our model outperformed baseline methods in both metrics.
+We experimented with the following models:
+
+U-Transformer model: here we sought to replicate the results achieved by Gao et al in the “Generalised Image Outpainting with U-Transformer” paper. We completed experimentation steps 1-2 for this model as a reference point, but found that achieving results comparable to that of the paper was computationally infeasible with our resources.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{u_transformer}
+    \caption{Output from the U-Transformer model, to paint outwards from the original image. Note that this is not the same task as we are attempting to complete with our models.}
+    \label{fig:u_transformer}
+\end{figure}
+
+The first diffusion model that we tried was inspired by the “Repaint” diffusion model published by Lugmayr et al in the paper “RePaint: Inpainting using Denoising Diffusion Probabilistic Models”. The architecture is shown here:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{repaint_architecture}
+    \caption{Illustration of our model's architecture that was based on the RePaint diffusion model architecture.}
+    \label{fig:repaint_architecture}
+\end{figure}
+
+And our output from using this model is shown below:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{repaint_results}
+    \caption{Output from the RePaint model that we tried.}
+    \label{fig:repaint_results}
+\end{figure}
+
+However, we realized after producing these output images that there was some leakage from the training data into the test data. Hence, we do not consider this to be a valid result.
+
+Our best independently developed result was achieved with our GAN model, which uses the PatchGAN discriminator and UNet generator as described in greater detail above. Our GAN model’s architecture is shown below, showing an example raw input image, cropped input image, and generated output image:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_architecture}
+    \caption{Architecture of our final GAN model.}
+    \label{fig:gan_architecture}
+\end{figure}
+
+Below are some of the results that we achieved using the GAN model on our test set of images, when the model received one cropped image of the same scene as input (i.e. step 2 in the list of “Experimentation Steps” above):
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_step_2}
+    \caption{Results from experimentation step 2 of our final GAN model}
+    \label{fig:gan_step_2}
+\end{figure}
+
+Here are the metrics that we achieved with our GAN model, using the outputs from step 2 in our list of “Experimentation Steps” above:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_metrics}
+    \caption{Metrics achieved by our final GAN model on the test set of images, as described in experimentation step 2.}
+    \label{fig:gan_metrics}
+\end{figure}
+
+Below are some of the results that we achieved using the GAN model on our test set of images, when the model received two adjacent and distinct images of different scenes as input, each cropped to only contain one quadrant (i.e. step 4 in the list of “Experimentation Steps” above):
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_step_4}
+    \caption{Results outputted by our final GAN model from input images of two separate scenes, as described in experimentation step 4.}
+    \label{fig:gan_step_4}
+\end{figure}
+
+We tried repeatedly to train a non-pretrained diffusion model from scratch but were unable to achieve visually satisfactory results with it. Here are some examples of what it produced in step 2:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{diffusion_step_2_1}
+    \caption{Example 1: our non-pretrained diffusion model output from Experimentation Step 2.}
+    \label{fig:diffusion_step_2_1}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{diffusion_step_2_2}
+    \caption{Example 2: our non-pretrained diffusion model output from Experimentation Step 2.}
+    \label{fig:diffusion_step_2_2}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{diffusion_step_2_3}
+    \caption{Example 3: our non-pretrained diffusion model output from Experimentation Step 2.}
+    \label{fig:diffusion_step_2_3}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{diffusion_step_2_4}
+    \caption{Example 4: our non-pretrained diffusion model output from Experimentation Step 2.}
+    \label{fig:diffusion_step_2_4}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{diffusion_step_2_5}
+    \caption{Example 5: our non-pretrained diffusion model output from Experimentation Step 2.}
+    \label{fig:diffusion_step_2_5}
+\end{figure}
+
+Finally, here are some of the results that we achieved using the GAN model on our test set of images, when the model received two non-adjacent distinct images of different scenes as input, each cropped more extensively to contain only part of one quadrant (i.e. step 6 in the list of “Experimentation Steps” above):
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_step_6}
+    \caption{Our final GAN model's output in experimentation step 6, using non-adjacent images of disparate scenes.}
+    \label{fig:gan_step_6}
+\end{figure}
+
+As a comparison benchmark, we also tried a pre-trained Stable Diffusion model from huggingface. Example results from steps 2 and 5 are shown below:
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{stable_diffusion_step_2_1}
+    \caption{Example 1: pretrained Stable Diffusion model output from Experimentation Step 2.}
+    \label{fig:stable_diffusion_step_2_1}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{stable_diffusion_step_2_2}
+    \caption{Example 2: pretrained Stable Diffusion model output from Experimentation Step 2.}
+    \label{fig:stable_diffusion_step_2_2}
+\end{figure}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{stable_diffusion_step_5}
+    \caption{Example 1: pretrained Stable Diffusion model output from Experimentation Step 5.}
+    \label{fig:stable_diffusion_step_5}
+\end{figure}
 
 \section*{Conclusion}
-In this report, we presented a method for performing image outpainting by interpolating between two scenes. We extended existing architectures such as U-Net and PatchGAN to create a model capable of generating intermediate regions that are both visually and semantically coherent. Our results demonstrate that our method outperforms existing techniques in generating smooth transitions between two images, effectively handling the challenges of both inpainting and outpainting.
+
+As can be seen from the images above, the best results that we achieved from a model that we developed were obtained from our final GAN model, which integrates a U-Net-based generator and a PatchGAN-based discriminator.
+
+Notably, the state of the art pretrained Stable Diffusion model \textit{“was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000.”} By contrast, we achieved the results shown above with our GAN model after training for just 5 hours on a RTX 2070. We’d love to see what our final GAN model can achieve with a training budget of \$600,000!
 
 \begin{thebibliography}{9}
     \bibitem{LeCun1998} Y. LeCun, et al., "Gradient-Based Learning Applied to Document Recognition," \textit{Proceedings of the IEEE}, 1998.
@@ -132,6 +296,5 @@ In this report, we presented a method for performing image outpainting by interp
     \bibitem{Mao2017} X. Mao, et al., "Least Squares Generative Adversarial Networks," \textit{ICCV 2017}.
     \bibitem{Dascoli2021} Author(s), "Title of the Paper," \textit{Conference/Journal Name}, 2021.
 \end{thebibliography}
-
 
 \end{document}
