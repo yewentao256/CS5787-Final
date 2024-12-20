@@ -167,6 +167,7 @@ We also considered transformer-based methods and diffusion-based inpainting mode
 Likewise, diffusion-based models are known for their high-quality samples, but training a diffusion inpainting model from scratch is computationally intensive and can struggle without massive training resources. By contrast, our proposed GAN-based approach with a U-Net generator and PatchGAN discriminator yields plausible results more efficiently, making it a practical solution within our computational constraints.
 
 \subsection*{Justification of Approach}
+Our implementation uses PyTorch, and we normalize inputs to the $[-1, 1]$ range. The models are trained using the Adam optimizer (Kingma \& Ba, 2015) with a learning rate of $2 \times 10^{-4}$ and $\beta_1 = 0.5$, $\beta_2 = 0.999$. We periodically save model checkpoints and evaluate intermediate outputs to ensure that the generator’s outputs become progressively more realistic and semantically meaningful. 
 
 Our chosen approach strikes a balance between complexity, computational feasibility, and output quality. The U-Net generator ensures that spatial details and global coherence are preserved, while the PatchGAN discriminator encourages realistic local texture synthesis. The combination of reconstruction, SSIM, and perceptual losses helps produce both structurally consistent and perceptually convincing completions. Although state-of-the-art pretrained diffusion or transformer-based models could, in theory, produce even more photorealistic results, our method achieves a strong baseline performance with significantly fewer computational resources, making it suitable for a wide range of applications and research settings.
 
@@ -336,6 +337,10 @@ As can be seen from the images above, the best results that we achieved from a m
 
 Notably, the state of the art pretrained Stable Diffusion model \textit{“was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000.”} By contrast, we achieved the results shown above with our GAN model after training for just 5 hours on a RTX 2070. We’d love to see what our final GAN model can achieve with a training budget of \$600,000!
 
+\section*{Appendix}
+
+All of our code can be found in \textcolor{red}{\href{https://github.com/yewentao256/CS5787-Final}{our repository}} on Github.
+
 \begin{thebibliography}{9}
     \bibitem{Dascoli2021} Stéphane d’Ascoli et al., "ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases," \textit{CVPR 2021}, 2021.
     \bibitem{Dosovitskiy2020} A. Dosovitskiy, et al., "Discriminative Unsupervised Feature Learning with Exemplar Convolutional Neural Networks," \textit{IEEE Transactions on Pattern Analysis and Machine Intelligence}, 2020.
@@ -348,6 +353,7 @@ Notably, the state of the art pretrained Stable Diffusion model \textit{“was t
     \bibitem{Lu2021} Chia-Ni Liu, et al., "Bridging the Visual Gap: Wide-Range Image Blending," \textit{CVPR 2021}.
     \bibitem{Lugmayr2022} Andreas Lugmayr, et al., "RePaint: Inpainting Using Denoising Diffusion Probabilistic Models," \textit{CVPR 2022}.
     \bibitem{Mao2017} X. Mao, et al., "Least Squares Generative Adversarial Networks," \textit{ICCV 2017}.
+    \bibitem{Mostaque2022} @EMostaque on Twitter, "The Stable Diffusion model was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000." \textit{https://twitter.com/EMostaque/status/1509780730730734592}
     \bibitem{Rombach2022} Robin Rombach, et al., "High-Resolution Image Synthesis with Latent Diffusion Models," \textit{CVPR 2022}.
     \bibitem{Tang2024} Luming Tang, et al., "RealFill: Reference-Driven Generation for Authentic Image Completion," \textit{SIGGRAPH 2024}.
     \bibitem{Yang2019} Zongxin Yang, et al., "Very Long Natural Scenery Image Prediction by Outpainting," \textit{ICCV 2019}.
