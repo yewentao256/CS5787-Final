@@ -95,6 +95,13 @@ Our work aligns with this intermediate ground. We aim to produce visually cohere
 
 \section{Data}
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{images/ns_dataset.jpg}
+    \caption{Example images from the NS-Outpainting dataset. Each image is center-cropped and normalized to the $[-1,1]$ range. The dataset consists of diverse natural scenes, providing a rich environment for learning robust generative completion.}
+    \label{fig:ns_dataset}
+\end{figure}
+
 We use the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset, consisting of thousands of diverse natural scene images. Each image is resized and center-cropped to a resolution of $256 \times 256$ and normalized to the $[-1,1]$ range. This ensures a uniform input format and stable training.
 
 To create challenging outpainting scenarios, we mask large central regions. Specifically, we define a crop ratio (e.g., $0.5$) to extract two non-overlapping patches: one from the bottom-left quadrant and another from the top-right quadrant. These two patches are then combined into a single input image with a large, unfilled middle area, forcing the model to blend and fill the missing region. The target image is the original scene with the corresponding quadrants masked out.
