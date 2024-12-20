@@ -43,22 +43,40 @@
 % Document begins
 \begin{document}
 
+
+
+%--------------------------- ABSTRACT -----------------------------------
+\begin{abstract}
+    Image outpainting and inpainting are important tasks in computer vision, enabling the seamless completion of missing regions or the extrapolation of existing imagery beyond its borders. In this paper, we tackle the challenging problem of blending two distinct image patches by filling the large gap between them, effectively generalizing the notions of both inpainting and outpainting. We present a GAN-based approach featuring a U-Net generator and a PatchGAN discriminator, trained on the NS-Outpainting dataset. Our model balances computational efficiency and output quality: it is trained from scratch on a single GPU for only a few hours, yet yields visually coherent completions and plausible scene transitions.
+    
+    We compare our approach to two diffusion-based methods: a pretrained Stable Diffusion model that achieves remarkable photorealism at the expense of enormous computational training costs, and a non-pretrained diffusion model trained under resource constraints, which struggles to produce coherent structures. Our experiments demonstrate that our GAN approach provides a strong balance between performance and feasibility, making it suitable for scenarios lacking the vast resources required by state-of-the-art pretrained models.
+\end{abstract}
+
 \maketitle
 
 \section*{Team Members}
 Wentao Ye (wy335), Mitchell Krieger (mak483), Sebastian Jay (srj63)
 
-\section*{Introduction}
-This paper explores the relationship between image inpainting and outpainting by training a model capable of interpolating between two disparate images, blending them seamlessly into a single coherent scene. Inpainting, or image interpolation, is a computer vision task that aims to fill in missing or removed sections of an image, ensuring the completed area integrates smoothly with the existing content. Outpainting, or image extrapolation, generates extensions of an image beyond its original borders.
 
-Drawing inspiration from both inpainting and outpainting, our objective is to generate a transitional region between two images. Traditional inpainting requires an understanding of the context and semantics surrounding the missing area to blend edges seamlessly into the original image. Outpainting, while sharing these challenges, has less context to infer from since it involves extending the image into an unknown space. Additionally, outpainting must handle long-range semantic dependencies, ensuring the generated extensions remain consistent with the original image no matter how far the extrapolation extends. Our task incorporates these challenges and introduces an added complexity: the need for the generated region to be semantically consistent with both images.
+%--------------------------- INTRODUCTION -----------------------------------
+\section{Introduction}
+Inpainting and outpainting are core image editing tasks that aim to reconstruct or extend image content in a visually coherent manner. Inpainting focuses on filling missing regions within an image, ensuring the new content integrates seamlessly with the surrounding context. Outpainting, on the other hand, extrapolates beyond the existing boundaries to imagine what lies outside the given frame. Both tasks demand understanding of high-level semantics and global image structure to produce realistic, contextually appropriate results.
 
-\section*{Related Work}
-To address the challenges of our task, we leverage deep learning architectures capable of capturing both the semantics at the edges of each image and the relationships between regions across the two images. Historically, Convolutional Neural Networks (CNNs) have been widely used in vision tasks due to their efficiency and ability to learn spatial relationships \cite{LeCun1998, Krizhevsky2012}. However, CNNs have inherent limitations stemming from their design. Their architecture emphasizes locality, with weight sharing across the entire input, which makes them less adept at capturing long-range dependencies or relationships between non-local regions—a key requirement for complex tasks like ours.
+In this work, we generalize these concepts by training a model that fills a large intermediate region between two distinct image patches. Unlike standard inpainting—where the missing region exists within a single image—our scenario must integrate information from two disparate sources. Similarly, unlike outpainting—which extrapolates from the known image area into unknown space—our model must create a transitional “bridge” region that is faithful to both input patches, which may differ in style, semantics, or scene composition.
 
-Transformer-based architectures, particularly those employing attention mechanisms, have shown effectiveness in both inpainting and outpainting due to their capacity to model long-range dependencies. For example, \cite{Jiahui2018} demonstrated that incorporating a contextual attention layer significantly improved inpainting performance. Vision Transformers (ViTs) introduced by \cite{Dosovitskiy2020} expanded on this by applying self-attention mechanisms to computer vision tasks, enabling the modeling of global relationships in an image. Further advancements, such as Swin Transformers \cite{Liu2021}, refined the transformer architecture for vision tasks using hierarchical computation and shifted windows to improve efficiency and adaptability. These approaches, however, remain computationally expensive and require large datasets for effective training \cite{Dascoli2021}.
+Our primary contribution is a GAN-based pipeline employing a U-Net generator and a PatchGAN discriminator. We demonstrate that our model can produce structurally coherent and visually plausible completions, bridging challenging gaps with minimal computational overhead. We trained our model on the NS-Outpainting dataset for only a few hours on a single GPU, yet the results are surprisingly strong.
 
-Yang et al. (2019) proposed a U-Net GAN architecture to perform very long outpainting of a scene in one direction. They used Skip Horizontal Connections to connect each layer of the encoder and decoder in the U-Net and an LSTM-based Recurrent Transfer Network to transfer the encoded sequences to the decoder. Using this method and generating in multiple steps, they were able to demonstrate long outpainting. Lu et al. (2021) expanded on this work by combining inpainting, outpainting, and image blending to fill in a scene between two images horizontally. They introduced a similar U-Net GAN architecture to Yang et al. but also incorporated contextual attention and a Bidirectional Content Transfer module, which used LSTMs as a bottleneck to ensure spatial and semantic consistency across two images. Our work generalizes this approach by extending it to painting between two images in multiple directions.
+We compare our approach against a pretrained Stable Diffusion model, which, while highly photorealistic, requires massive computational resources and extensive pretraining. Additionally, we investigate a non-pretrained diffusion model to highlight the difficulty of achieving similar results from scratch without large-scale resources. Ultimately, our approach provides a practical balance: good performance achievable with modest resources, making it a strong candidate for a wide range of applications.
+
+%--------------------------- RELATED WORK -----------------------------------
+\section{Related Work}
+Image inpainting and outpainting have been widely studied in computer vision. Early methods often relied on patch-based synthesis or PDE-based techniques, while more recent approaches leverage deep neural networks. CNN-based methods \cite{Krizhevsky2012,LeCun1998} improved efficiency and learned complex visual patterns, though they struggled with capturing long-range dependencies.
+
+Transformer-based methods and attention mechanisms \cite{Dosovitskiy2020,Liu2021,Jiahui2018} advanced the state-of-the-art by modeling global relationships. Likewise, Vision Transformers (ViTs) and their variants improved generalization on various vision tasks. However, these models often demand significant computational resources and large datasets \cite{Dascoli2021}.
+
+GAN-based methods for inpainting/outpainting \cite{Isola2017,Yu2018,Yang2019} have shown success by using adversarial training to ensure plausible local detail and texture. U-Net GAN architectures \cite{Ronneberger2015} and contextual attention mechanisms further improved the realism of generated content. Lu et al. \cite{Lu2021} combined inpainting and outpainting to bridge visual gaps between scenes.
+
+Diffusion models \cite{Lugmayr2022,Rombach2022} have recently shown impressive performance in generative tasks, including inpainting. Pretrained models such as Stable Diffusion achieve photorealistic results but come at large computational and resource costs. Our method, focusing on a U-Net and PatchGAN architecture, offers a more resource-efficient alternative, producing strong results without the need for massive training budgets.
 
 \section*{Datasets}
 We used the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset to train our models. It is used in the original U-Transformer paper. We also tested our trained model on additional images sourced from the internet.
@@ -310,11 +328,12 @@ Comparing the three approaches:
 
 Overall, our experiments show that while pretrained diffusion models can achieve remarkable realism, their resource requirements are prohibitive for many applications. In contrast, our GAN-based approach provides a strong balance between performance quality and computational feasibility, making it a practical solution for image outpainting and hole-filling tasks.
 
-\section*{Conclusion}
+\section{Conclusion}
+In this work, we presented a GAN-based framework for completing large missing regions between two image patches, combining insights from inpainting and outpainting. Our U-Net and PatchGAN-based approach achieves robust performance with minimal training time and computational resources. Although not as photorealistic as a heavily pretrained Stable Diffusion model, our method demonstrates that high-quality image completion is possible on a modest budget.
 
-As can be seen from the images above, the best results that we achieved from a model that we developed were obtained from our final GAN model, which integrates a U-Net-based generator and a PatchGAN-based discriminator.
+As can be seen from the images above, the best results that we achieved from a model that we developed were obtained from our final GAN model, which integrates a U-Net-based generator and a PatchGAN-based discriminator. Notably, the state-of-the-art pretrained Stable Diffusion model \textit{“was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000.”} By contrast, we achieved the results shown above with our GAN model after training it from scratch for just 5 hours on a single RTX 2070 GPU. We’d love to see what our final GAN model can achieve with a training budget of \$600,000!
 
-Notably, the state of the art pretrained Stable Diffusion model \textit{“was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000.”} By contrast, we achieved the results shown above with our GAN model after training it from scratch for just 5 hours on a single RTX 2070 GPU. We’d love to see what our final GAN model can achieve with a training budget of \$600,000!
+For future work, exploring hybrid approaches that incorporate some form of lightweight attention, or leveraging a subset of pretraining strategies, could further improve visual fidelity. Additionally, employing larger datasets or integrating domain adaptation techniques may help the model better handle highly disparate scenes.
 
 \section*{Appendix}
 
