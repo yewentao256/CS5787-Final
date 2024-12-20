@@ -249,13 +249,22 @@ Quantitatively, as shown in Figure~\ref{fig:gan_metrics}, our GAN model achieves
     \label{fig:gan_metrics}
 \end{figure}
 
-Figure~\ref{fig:gan_step_4} demonstrates the GAN’s performance when blending two distinct scenes. The model still attempts to create a plausible transitional region, though subtle artifacts can appear due to stark semantic differences. Even so, it significantly outperforms random guessing and often yields a visually coherent hybrid panorama.
+Figure~\ref{fig:gan_step_4_med_1} and Figure~\ref{fig:gan_step_4_med_2} demonstrate the GAN’s performance when blending two distinct scenes. The model still attempts to create a plausible transitional region, though subtle artifacts can appear due to stark semantic differences. Even so, it significantly outperforms random guessing and often yields a visually coherent hybrid panorama.
 
 \begin{figure}[h!]
     \centering
-    \includegraphics[width=\linewidth]{gan_step_4}
+    \includegraphics[width=\linewidth]{gan_step_4_med_1}
     \caption{GAN model results when attempting to blend two distinct scenes. Although the input images differ, the model generates a reasonable transitional region that attempts to merge disparate landscapes.}
-    \label{fig:gan_step_4}
+    \label{fig:gan_step_4_med_1}
+\end{figure}
+
+Figure~\ref{fig:gan_step_4_med_2} demonstrates the GAN’s performance when blending two distinct scenes. The model still attempts to create a plausible transitional region, though subtle artifacts can appear due to stark semantic differences. Even so, it significantly outperforms random guessing and often yields a visually coherent hybrid panorama.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\linewidth]{gan_step_4_med_2}
+    \caption{GAN model results when attempting to blend two distinct scenes. Although the input images differ, the model generates a reasonable transitional region that attempts to merge disparate landscapes.}
+    \label{fig:gan_step_4_med_2}
 \end{figure}
 
 When pushed to the sparse-quadrant scenario (Figure~\ref{fig:gan_step_6}), the model demonstrates resilience, still producing coherent completions with limited reference information. These results highlight the robust generalization capabilities of our GAN approach.
