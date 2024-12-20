@@ -295,8 +295,6 @@ Additionally, while introducing the SSIM loss and perceptual loss significantly 
     \label{tab:ablation_loss_final}
 \end{table}
 
-
-
 \subsection*{Experiment 2: Pretrained Stable Diffusion}
 
 As a benchmark, we tested a pretrained Stable Diffusion model \cite{Rombach2022} obtained from HuggingFace. This model was extensively trained on vast image corpora using hundreds of thousands of GPU-hours, resulting in state-of-the-art generative capabilities. Figure~\ref{fig:stable_diffusion_step_2_1} and Figure~\ref{fig:stable_diffusion_step_2_2} show outputs from the same-scene completion scenario. The Stable Diffusion model’s results are often photorealistic, with high-quality textures and smooth transitions. 
@@ -390,6 +388,8 @@ For future work, exploring hybrid approaches that incorporate some form of light
 \section{Appendix}
 
 All of our code can be found in \textcolor{red}{\href{https://github.com/yewentao256/CS5787-Final}{our repository}} on Github.
+
+\clearpage
 
 \begin{thebibliography}{9}
     \bibitem{Dascoli2021} Stéphane d’Ascoli et al., "ConViT: Improving Vision Transformers with Soft Convolutional Inductive Biases," \textit{CVPR 2021}, 2021.
