@@ -78,8 +78,14 @@ GAN-based methods for inpainting/outpainting \cite{Isola2017,Yu2018,Yang2019} ha
 
 Diffusion models \cite{Lugmayr2022,Rombach2022} have recently shown impressive performance in generative tasks, including inpainting. Pretrained models such as Stable Diffusion achieve photorealistic results but come at large computational and resource costs. Our method, focusing on a U-Net and PatchGAN architecture, offers a more resource-efficient alternative, producing strong results without the need for massive training budgets.
 
-\section*{Datasets}
-We used the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset to train our models. It is used in the original U-Transformer paper. We also tested our trained model on additional images sourced from the internet.
+\section*{Data}
+
+We use the NS-Outpainting dataset, consisting of thousands of diverse natural scene images. Each image is resized and center-cropped to a resolution of $256 \times 256$ and normalized to the $[-1,1]$ range. This ensures a uniform input format and stable training.
+
+To create challenging outpainting scenarios, we mask large central regions. Specifically, we define a crop ratio (e.g., $0.5$) to extract two non-overlapping patches: one from the bottom-left quadrant and another from the top-right quadrant. These two patches are then combined into a single input image with a large, unfilled middle area, forcing the model to blend and fill the missing region. The target image is the original scene with the corresponding quadrants masked out.
+
+This quadrant-based masking strategy is more complex than conventional inpainting or outpainting, as the network must seamlessly integrate distinct visual cues from the two provided patches. We split the dataset into training and test sets to evaluate generalization, and no additional semantic preprocessing is applied. The diversity and complexity of the NS-Outpainting dataset provide a rich environment for learning robust generative completion capabilities.
+
 
 \section*{Methods}
 
