@@ -165,7 +165,7 @@ Beyond pixel-level accuracy, we incorporate an SSIM loss to encourage structural
 where $\text{SSIM}(\cdot,\cdot)$ measures perceptual similarity.
 
 \noindent\textbf{Perceptual Loss:}  
-We also use a perceptual loss, computed from features of a pre-trained VGG-19 network \cite{Johnson2016}, to ensure that the synthesized regions align with the high-level semantics of the original scenes:
+We also use a perceptual loss, computed from features of a pre-trained VGG-19 network \cite{Simonyan2015}, to ensure that the synthesized regions align with the high-level semantics of the original scenes:
 \[
 \mathcal{L}_{\text{perc}} = \sum_{l} \| \phi_l(x) - \phi_l(G(x)) \|_2,
 \]
@@ -341,6 +341,7 @@ All of our code can be found in \textcolor{red}{\href{https://github.com/yewenta
     \bibitem{Mostaque2022} @EMostaque on Twitter, "The Stable Diffusion model was trained using 256 Nvidia A100 GPUs on Amazon Web Services for a total of 150,000 GPU-hours, at a cost of \$600,000." \textit{https://twitter.com/EMostaque/status/1509780730730734592}
     \bibitem{Rombach2022} Robin Rombach, et al., "High-Resolution Image Synthesis with Latent Diffusion Models," \textit{CVPR 2022}.
     \bibitem{Ronneberger2015} Olaf Ronneberger, et al., "U-Net: Convolutional Networks for Biomedical Image Segmentation," \textit{MICCAI 2015}.
+    \bibitem{Simonyan2015} Karen Simonyan, et al., "Very Deep Convolutional Networks for Large-Scale Image Recognition," \textit{ICLR 2015}.
     \bibitem{Tang2024} Luming Tang, et al., "RealFill: Reference-Driven Generation for Authentic Image Completion," \textit{SIGGRAPH 2024}.
     \bibitem{Yang2019} Zongxin Yang, et al., "Very Long Natural Scenery Image Prediction by Outpainting," \textit{ICCV 2019}.
     \bibitem{Yu2018} Jiahui Yu et al., "Generative Image Inpainting with Contextual Attention," \textit{CVPR 2018}.
