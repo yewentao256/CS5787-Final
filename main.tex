@@ -47,7 +47,7 @@
 
 %--------------------------- ABSTRACT -----------------------------------
 \begin{abstract}
-    Image outpainting and inpainting are important tasks in computer vision, enabling the seamless completion of missing regions or the extrapolation of existing imagery beyond its borders. In this paper, we tackle the challenging problem of blending two distinct image patches by filling the large gap between them, effectively generalizing the notions of both inpainting and outpainting. We present a GAN-based approach featuring a U-Net generator and a PatchGAN discriminator, trained on the NS-Outpainting dataset. Our model balances computational efficiency and output quality: it is trained from scratch on a single GPU for only a few hours, yet yields visually coherent completions and plausible scene transitions.
+    Image outpainting and inpainting are important tasks in computer vision, enabling the seamless completion of missing regions or the extrapolation of existing imagery beyond its borders. In this paper, we tackle the challenging problem of blending two distinct image patches by filling the large gap between them, effectively generalizing the notions of both inpainting and outpainting. We present a GAN-based approach featuring a U-Net generator and a PatchGAN discriminator, trained on the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset. Our model balances computational efficiency and output quality: it is trained from scratch on a single GPU for only a few hours, yet yields visually coherent completions and plausible scene transitions.
     
     We compare our approach to two diffusion-based methods: a pretrained Stable Diffusion model that achieves remarkable photorealism at the expense of enormous computational training costs, and a non-pretrained diffusion model trained under resource constraints, which struggles to produce coherent structures. Our experiments demonstrate that our GAN approach provides a strong balance between performance and feasibility, making it suitable for scenarios lacking the vast resources required by state-of-the-art pretrained models.
 \end{abstract}
@@ -64,7 +64,7 @@ Inpainting and outpainting are core image editing tasks that aim to reconstruct 
 
 In this work, we generalize these concepts by training a model that fills a large intermediate region between two distinct image patches. Unlike standard inpainting—where the missing region exists within a single image—our scenario must integrate information from two disparate sources. Similarly, unlike outpainting—which extrapolates from the known image area into unknown space—our model must create a transitional “bridge” region that is faithful to both input patches, which may differ in style, semantics, or scene composition.
 
-Our primary contribution is a GAN-based pipeline employing a U-Net generator and a PatchGAN discriminator. We demonstrate that our model can produce structurally coherent and visually plausible completions, bridging challenging gaps with minimal computational overhead. We trained our model on the NS-Outpainting dataset for only a few hours on a single GPU, yet the results are surprisingly strong.
+Our primary contribution is a GAN-based pipeline employing a U-Net generator and a PatchGAN discriminator. We demonstrate that our model can produce structurally coherent and visually plausible completions, bridging challenging gaps with minimal computational overhead. We trained our model on the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset for only a few hours on a single GPU, yet the results are surprisingly strong.
 
 We compare our approach against a pretrained Stable Diffusion model, which, while highly photorealistic, requires massive computational resources and extensive pretraining. Additionally, we investigate a non-pretrained diffusion model to highlight the difficulty of achieving similar results from scratch without large-scale resources. Ultimately, our approach provides a practical balance: good performance achievable with modest resources, making it a strong candidate for a wide range of applications.
 
@@ -80,11 +80,11 @@ Diffusion models \cite{Lugmayr2022,Rombach2022} have recently shown impressive p
 
 \section*{Data}
 
-We use the NS-Outpainting dataset, consisting of thousands of diverse natural scene images. Each image is resized and center-cropped to a resolution of $256 \times 256$ and normalized to the $[-1,1]$ range. This ensures a uniform input format and stable training.
+We use the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset, consisting of thousands of diverse natural scene images. Each image is resized and center-cropped to a resolution of $256 \times 256$ and normalized to the $[-1,1]$ range. This ensures a uniform input format and stable training.
 
 To create challenging outpainting scenarios, we mask large central regions. Specifically, we define a crop ratio (e.g., $0.5$) to extract two non-overlapping patches: one from the bottom-left quadrant and another from the top-right quadrant. These two patches are then combined into a single input image with a large, unfilled middle area, forcing the model to blend and fill the missing region. The target image is the original scene with the corresponding quadrants masked out.
 
-This quadrant-based masking strategy is more complex than conventional inpainting or outpainting, as the network must seamlessly integrate distinct visual cues from the two provided patches. We split the dataset into training and test sets to evaluate generalization, and no additional semantic preprocessing is applied. The diversity and complexity of the NS-Outpainting dataset provide a rich environment for learning robust generative completion capabilities.
+This quadrant-based masking strategy is more complex than conventional inpainting or outpainting, as the network must seamlessly integrate distinct visual cues from the two provided patches. We split the dataset into training and test sets to evaluate generalization, and no additional semantic preprocessing is applied. The diversity and complexity of the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset provide a rich environment for learning robust generative completion capabilities.
 
 
 \section*{Methods}
@@ -201,7 +201,7 @@ In this section, we present a comprehensive set of experiments aimed at evaluati
 
 \subsection*{Experimental Setup}
 
-For all experiments, we use images from the NS-Outpainting dataset. This dataset consists of wide, high-resolution panoramic images of natural scenes, which is suitable for the outpainting and image completion tasks we consider. Each image is processed by removing specific quadrants (e.g., the top-right and bottom-left portions) to create challenging input scenarios for our models. The models are then tasked with reconstructing the missing regions, effectively stitching together disparate image segments into one seamless panorama.
+For all experiments, we use images from the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset. This dataset consists of wide, high-resolution panoramic images of natural scenes, which is suitable for the outpainting and image completion tasks we consider. Each image is processed by removing specific quadrants (e.g., the top-right and bottom-left portions) to create challenging input scenarios for our models. The models are then tasked with reconstructing the missing regions, effectively stitching together disparate image segments into one seamless panorama.
 
 We report three primary experiments that correspond to different steps of complexity and difficulty in image completion:
 
@@ -283,7 +283,7 @@ When tackling the sparse-quadrant scenario, as shown in Figure~\ref{fig:stable_d
 
 \subsection*{Experiment 3: Non-Pretrained Diffusion Model}
 
-Finally, we attempted to train a diffusion-based model from scratch using the RePaint framework \cite{Lugmayr2022}. Unlike Stable Diffusion, which benefits from massive pretraining, our scratch-trained diffusion model is limited to the NS-Outpainting dataset and a modest training budget. Figures~\ref{fig:diffusion_step_2_3} through \ref{fig:diffusion_step_2_5} show several attempts at same-scene completion. These results are significantly weaker, with the model struggling to produce coherent global structures or realistic textures. While some color patterns and vague shapes emerge, the outputs lack semantic consistency and visually pleasing features.
+Finally, we attempted to train a diffusion-based model from scratch using the RePaint framework \cite{Lugmayr2022}. Unlike Stable Diffusion, which benefits from massive pretraining, our scratch-trained diffusion model is limited to the \textcolor{red}{\href{https://github.com/z-x-yang/NS-Outpainting}{NS-Outpainting}} dataset and a modest training budget. Figures~\ref{fig:diffusion_step_2_3} through \ref{fig:diffusion_step_2_5} show several attempts at same-scene completion. These results are significantly weaker, with the model struggling to produce coherent global structures or realistic textures. While some color patterns and vague shapes emerge, the outputs lack semantic consistency and visually pleasing features.
 
 \begin{figure}[h!]
     \centering
