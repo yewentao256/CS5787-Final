@@ -339,6 +339,23 @@ Comparing the three approaches:
     \item \textbf{Non-Pretrained Diffusion:} Without large-scale pretraining and extensive compute, a diffusion model trained from scratch underperforms our GAN approach. The outputs are generally incoherent and lack semantic structure, highlighting the difficulty of training diffusion models in data-constrained and resource-limited settings.
 \end{itemize}
 
+While we do not have direct quantitative metrics from the pretrained Stable Diffusion model for this specific outpainting scenario, its results are visually superior to both our GAN-based approach and the non-pretrained diffusion model. The table below compares the non-pretrained diffusion model and our final GAN configuration. Stable Diffusion’s performance, based on prior work and observed visual fidelity, would likely surpass these metrics by a substantial margin, but at an enormous computational cost.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        \textbf{Method} & \textbf{PSNR} & \textbf{SSIM} & \textbf{FID} \\ 
+        \midrule
+        Non-Pretrained Diffusion & 10.4482 & 0.5508 & 243.6330 \\
+        Ours (L1+SSIM+Perceptual) & 18.8690 & 0.7305 & 69.5485 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Performance comparison between the non-pretrained diffusion model and our final GAN-based model. While not shown here, the pretrained Stable Diffusion model, with its massive training resources, surpasses both of these methods in terms of perceptual quality and realism.}
+    \label{tab:comparison}
+\end{table}
+
+
 Overall, our experiments show that while pretrained diffusion models can achieve remarkable realism, their resource requirements are prohibitive for many applications. In contrast, our GAN-based approach provides a strong balance between performance quality and computational feasibility, making it a practical solution for image outpainting and hole-filling tasks.
 
 \section{Conclusion}
