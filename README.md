@@ -2,11 +2,13 @@
 
 ## Results
 
-![image](images/gan_step_4_med_1.png){width=80%}
+![image](images/result1.png)
 
-![image](images/gan_step_4_med_2.png){width=80%}
+![image](images/result2.png)
 
-![image](images/gan_step_6.jpg){width=80%}
+![image](images/result3.png)
+
+![image](images/result4.png)
 
 ## Training Process
 
