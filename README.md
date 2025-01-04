@@ -2,35 +2,41 @@
 
 ## Results
 
-![image](images/gan_step_4_med_1.png)
+![image](images/gan_step_4_med_1.png){width=80%}
 
-![image](images/gan_step_4_med_2.png)
+![image](images/gan_step_4_med_2.png){width=80%}
 
-![image](images/gan_step_6.jpg)
+![image](images/gan_step_6.jpg){width=80%}
+
+## Training Process
+
+![image](images/training%20process.png){width=100%}
 
 ## Datasets
 
 You can download the scenery dataset here: [https://github.com/z-x-yang/NS-Outpainting]
 
-## Train
+## Commands
+
+### Start Training
 
 ```bash
 python main.py --mode train --epochs 30
 ```
 
-## Train From Checkpoints
+### Train From Checkpoints
 
 ```bash
 python main.py --mode train --checkpoint_path checkpoints/checkpoint_epoch_30.pth --epochs 50
 ```
 
-## Eval
+### Eval
 
 ```bash
 python main.py --mode eval --checkpoint_path checkpoints/checkpoint_epoch_55.pth --test_dir data-scenery-small-test
 ```
 
-## Eval with Two Images
+### Eval with Two Images
 
 Note: You can directly input any image, our code will help you to crop
 
